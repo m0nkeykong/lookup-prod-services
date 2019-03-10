@@ -1,38 +1,44 @@
-const mongoose          = require('mongoose');
-      // schemas:
-var   Track             = require('../models/TrackSchema');
-var   PointSchema     = require('../models/PointSchema');
+const express = require('express'),
+      router = express.Router(),
+      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      PointSchema = require('../models/PointSchema');
+bodyParser = require('body-parser');
 
-/************************** ROUTE: insertPoint **************************/
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({
+      extended: true
+}));
 
-exports.insertPoint = (req,res)=>{
-  
+/** 
+    values required:
+        type, title, startPoint-id, endPoint-id
+    values can be null:
+        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+**/
+router.post('/insertPoint', (req, res) => {
       console.log("Enter route(POST): /insertPoint");
-      // console.log(req.body);
-      // res.status(200).send(`try to do my best`);
-      
+
       const newPoint = new PointSchema(req.body);
-      newPoint.save((err,doc) => {
-            if (err){
-              console.log(err);
-              return res.status(500).send({ "Message": "Internal server error" });
-            }
-            console.log(`Ponint has been created successfully`);
-            res.status(200).send(doc._id);
+      newPoint.save((err, doc) => {
+            if (err) res.status(500).send(err);
+            else if (doc) res.status(200).send(doc._id);
+            else res.status(500).send("Error create point");
       });
-};
+});
 
-////////////////////////////////////////////////////////////////////////////////////
-
-
-/************************** ROUTE: deletePointById **************************/
-
-exports.deletePointById = (req, res) => {
-
+/** 
+    values required:
+        id
+**/
+router.delete('/deletePointById/:id', (req, res) => {
       console.log("Enter route(DELETE): /deletePointById");
-      res.status(200).send("OK");
 
-};
+      // Find and remove point if exist
+      PointSchema.findByIdAndRemove(req.params.id, (err, docs) => {
+            if (err) return res.status(500).send(err);
+            else if (docs) return res.status(200).send(docs);
+            else res.status(500).send("Error delete point");
+      });
+});
 
-
-////////////////////////////////////////////////////////////////////////////////////
+module.exports = router;
