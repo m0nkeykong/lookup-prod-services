@@ -11,7 +11,7 @@ var UserSchema = new mongoose.Schema({
     accessibility: {Number},  // '0'-normal | '1'-blind | '2'-deaf
     favoriteTracks: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema"}],
     trackRecords: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema"}],
-    BLE: [{type: mongoose.Schema.Types.ObjectId, ref: "BLEScehma"}]
+    BLE: {type: mongoose.Schema.Types.ObjectId, ref: "BLEScehma"}
 });
 
 module.exports = mongoose.model("UserSchema", UserSchema, "Users");
