@@ -11,8 +11,6 @@ var express = require('express'),
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({extended: true}));
 
-console.log("Reut and Roni");
-
 app.set('port', port);
 
 //  refers root to API file
