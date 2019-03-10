@@ -14,7 +14,6 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 exports.insertUser = (req, res) => {
       console.log("Enter route(POST): /insertUsers");
-      // reut
 
       // This will do the work
       const newUser = new User(req.body);
