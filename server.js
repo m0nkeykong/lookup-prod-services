@@ -34,7 +34,6 @@ app.all('*', (req, res, next) => {
 
 // app.post('/login', userController.insertUser);
 
-
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
