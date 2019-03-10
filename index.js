@@ -1,0 +1,5 @@
+require('./database');
+require('./server');
+
+
+

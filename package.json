@@ -1,0 +1,28 @@
+{
+  "name": "lookup",
+  "version": "1.0.0",
+  "description": "LookUp Final Project",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.4.18",
+    "mongoose-unique-validator": "^2.0.2",
+    "node-dev": "^3.1.3",
+    "promise": "^8.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReutLeib/LookUp_Final_Project/tree/master/LookUp_Server_side"
+  },
+  "author": "Reut Leib, Roni Polisanov, Haim Elbaz",
+  "license": "ISC"
+}
