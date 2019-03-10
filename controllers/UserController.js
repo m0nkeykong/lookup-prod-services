@@ -13,7 +13,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 exports.insertUser = (req, res) => {
       console.log("Enter route(POST): /insertUsers");
-
+      
       // This will do the work
       const newUser = new User(req.body);
       newUser.save(err => {
