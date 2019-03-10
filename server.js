@@ -11,7 +11,7 @@ var express = require('express'),
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({extended: true}));
 
-// STAMMM
+// conflict !!
 
 app.set('port', port);
 
