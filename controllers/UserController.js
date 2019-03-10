@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       ALE = require('../models/BLESchema'),
       settings = require('../config'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),  //  Function that checks and validates Dields - used for update empty params issue
+      onlyNotEmpty = require('../controllers/onlyNotEmpty'),  
       bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
