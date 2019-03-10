@@ -107,7 +107,7 @@ router.put('/updateAccountDetails/:userid', onlyNotEmpty, (req, res) => {
 // Delete user account
 router.delete('/deleteAccount/:userid', (req, res) => {
       // Find and remove account if existing
-      User.findByIdAndRemove(eq.params.userid, (err, docs) => {
+      User.findByIdAndRemove(req.params.userid, (err, docs) => {
             if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
             if (!docs) return res.status(404).send({ "message": "No user found" });
             console.log(`User: ${docs.name} deleted successfully`);
