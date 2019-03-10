@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 
 app.use(cors());
 app.use('/user', UserController);
-// app.use('/track', TrackController);
+app.use('/track', TrackController);
 // app.use('/point', PointController);
 
 app.all('*', (req, res, next) => {

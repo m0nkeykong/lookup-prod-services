@@ -1,13 +1,13 @@
-var   mongoose    = require('mongoose');
-var   point       = require('./PointSchema');
+var mongoose = require('mongoose');
+var point = require('./PointSchema');
 
-function isUnique(_title){
-      this.model('TrackSchema').find({title:_title}, (err,track)=>{
-            if(err){
+function isUnique(_title) {
+      this.model('TrackSchema').find({ title: _title }, (err, track) => {
+            if (err) {
                   console.log(err);
                   return false;
             }
-            if(track == "")   // not found - title is unique
+            if (track == "")   // not found - title is unique
                   return true;
             else  // title exist
                   return false;
