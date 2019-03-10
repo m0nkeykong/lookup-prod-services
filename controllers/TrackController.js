@@ -2,8 +2,7 @@ const express = require('express'),
       router = express.Router(),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
-      BLE = require('../models/BLESchema'),
-      settings = require('../config'),
+      Points = require('../models/PointSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
@@ -60,12 +59,12 @@ router.get('/getAllTracks', (req, res) => {
 **/
 router.delete('/deleteTrackBytitle/:title', (req, res) => {
       console.log("Enter route(DELETE): /deleteTrackBytitle");
-
-      Track.findOne({
-            title: req.params.title
-      }, (err, track) => {
-            if (err) res.status(500).send(err);
+      Track.findOne({ title: req.params.title }, (err, track) => {
+            if (err) {
+                  res.status(500).send(err);
+            }
             else if (track) {
+                  console.log(track);
                   // remove startPoint
                   Points.findByIdAndRemove(track.startPoint._id, err => {
                         if (err) res.status(500).send(err);
@@ -82,38 +81,62 @@ router.delete('/deleteTrackBytitle/:title', (req, res) => {
                   })
                   // find all users that have this track in "favoriteTracks" array and "trackRecords" array
                   deleteTrackFromUsers(track._id).then((result, err) => {
-                        if (err) res.status(500).send(config.errors.ERROR_DELETE_TRACK);
-                        else if (result) res.status(200).send("OK");
-                        else res.status(500).send(config.errors.ERROR_DELETE_TRACK);
+                        if (result)
+                              console.log(`result: ${result}`);
+                        res.status(500).send(config.errors.ERROR_DELETE_TRACK);
                   });
                   // TODO: remove specific track!
-            } else res.status(500).send(config.errors.ERROR_DELETE_TRACK);
+                  res.status(200).send("OK");
+            }
+            else{
+                  // console.log("CCCCCCC");
+                  res.status(500).send(config.errors.ERROR_DELETE_TRACK);
+            }
       });
+
 });
 
-var deleteTrackFromUsers = (id) => { // return boolean
+var deleteTrackById = (id) => { // return boolean
+      return new Promise((resolve, reject) => {
+            console.log("function: deleteTrackById");
+
+            console.log(`id: ${id}`);
+            Track.findByIdAndRemove(id, (err, doc) => {
+                  if (err) {
+                        console.log(err);
+                        return false;
+                  }
+                  else if (doc) return true;
+                  else {
+                        console.log("Error with 'deleteTrackById' function");
+                        return false;
+                  }
+            });
+      });
+
+}
+
+var deleteTrackFromUsers = (trackId) => { // return boolean
 
       return new Promise((resolve, reject) => {
             console.log("function: deleteTrackFromUsers");
+            console.log(`trackId: ${trackId}`);
 
-            User.find({
-                  favoriteTracks: id
-            }, (err, user) => {
+            // TODO: why there is no id like that? => user return `[]`
+            User.find({ favoriteTracks: trackId }, (err, user) => {
+                  console.log(user);    
+                  if(err) return false;
+                  if(user.length == 0) return false;           
                   user.forEach((usr) => {
+                        console.log(`USER: ${usr}`);
                         usr.favoriteTracks.forEach((element) => {
-                              var cond = {
-                                          favoriteTracks: element
-                                    },
-                                    update = {
-                                          $pull: {
-                                                favoriteTracks: id
-                                          }
-                                    },
-                                    opts = {
-                                          multi: true
-                                    };
+                              console.log(`ELEMENT: ${element}`);
 
-                              User.update(cond, update, opts, err => {
+                              var cond = { favoriteTracks: element },
+                                    update = { $pull: { favoriteTracks: trackId } },
+                                    opts = { multi: true };
+
+                              User.findOneAndUpdate(cond, update, opts, err => {
                                     if (err) {
                                           console.log(err);
                                           return false;
@@ -122,24 +145,17 @@ var deleteTrackFromUsers = (id) => { // return boolean
                         });
                   })
             });
-            User.find({
-                  trackRecords: id
-            }, (err, user) => {
+
+            User.find({ trackRecords: trackId }, (err, user) => {
+                  if(err) return false;
+                  if(user.length == 0) return false;           
                   user.forEach((usr) => {
                         usr.trackRecords.forEach((element) => {
-                              var cond = {
-                                          trackRecords: element
-                                    },
-                                    update = {
-                                          $pull: {
-                                                trackRecords: id
-                                          }
-                                    },
-                                    opts = {
-                                          multi: true
-                                    };
+                              var cond = { trackRecords: element },
+                                    update = { $pull: { trackRecords: trackId } },
+                                    opts = { multi: true };
 
-                              User.update(cond, update, opts, err => {
+                              User.findOneAndUpdate(cond, update, opts, err => {
                                     if (err) {
                                           console.log(err);
                                           return false;
