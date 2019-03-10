@@ -6,6 +6,7 @@ const express = require('express'),
       settings = require('../config'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
+
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
