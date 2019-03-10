@@ -2,7 +2,7 @@ const express = require('express'),
       router = express.Router(),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
-      BLE = require('../models/BLESchema'),
+      ALE = require('../models/BLESchema'),
       settings = require('../config'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),  //  Function that checks and validates Dields - used for update empty params issue
       bodyParser = require('body-parser');
@@ -13,7 +13,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 exports.insertUser = (req, res) => {
       console.log("Enter route(POST): /insertUsers");
-
+      
       // This will do the work
       const newUser = new User(req.body);
       newUser.save(err => {
