@@ -3,7 +3,6 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
-      settings = require('../config'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
@@ -12,20 +11,42 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 /************************** ROUTE: insertUser **************************/
 
-exports.insertUser = (req, res) => {
+// exports.insertUser = (req, res) => {
+//       console.log("Enter route(POST): /insertUsers");
+
+//       // This will do the work
+//       const newUser = new User(req.body);
+//       newUser.save(err => {
+//             if (err) {
+//                   console.log(err);
+//                   return res.status(500).send({ "Message": "Internal server error" });
+//             }
+//             console.log(`User ${req.body.email} has been created successfully`);
+//             res.status(200).send(`User ${req.body.email} has been created successfully`);
+//       });
+// };
+
+/** insertUser
+    values required:
+        name, email, password, abirthDay, profilePicture
+    values can be null:
+        disables, accessibility
+**/
+// create User and return this user
+router.post('/insertUser', (req,res) => {
       console.log("Enter route(POST): /insertUsers");
 
       // This will do the work
       const newUser = new User(req.body);
-      newUser.save(err => {
+      newUser.save((err,user) => {
             if (err) {
                   console.log(err);
                   return res.status(500).send({ "Message": "Internal server error" });
             }
             console.log(`User ${req.body.email} has been created successfully`);
-            res.status(200).send(`User ${req.body.email} has been created successfully`);
+            res.status(200).send(user);
       });
-};
+});
 
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
