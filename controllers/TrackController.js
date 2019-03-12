@@ -53,7 +53,7 @@ router.get('/getAllTracks', (req, res) => {
       });
 });
 
-// Update user account by id
+// Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
       // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
