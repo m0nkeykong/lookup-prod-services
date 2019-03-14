@@ -3,15 +3,17 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
-      settings = require('../config'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),  //  Function that checks and validates Dields - used for update empty params issue
+      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
+
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
 
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
+      console.log("Enter route(GET): /getAllAccounts");
+
       User.find({}, (err, users) => {
             // Problem with user schema
             if (err) return res.status(500).send({ "message": "There was a problem finding the users." });
@@ -88,7 +90,7 @@ router.put('/updateAccountDetails/:userid', onlyNotEmpty, (req, res) => {
 // Delete user account
 router.delete('/deleteAccount/:userid', (req, res) => {
       // Find and remove account if existing
-      User.findByIdAndRemove(eq.params.userid, (err, docs) => {
+      User.findByIdAndRemove(req.params.userid, (err, docs) => {
             if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
             if (!docs) return res.status(404).send({ "message": "No user found" });
             console.log(`User: ${docs.name} deleted successfully`);
@@ -104,9 +106,9 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
                   { _id: req.params.userid },
                   { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
             ]
-      }, (err, user) => {
+      }, (err, doc) => {
             if (err) return res.status(500).send({ "message": "There was a problem searching" });
-            if (user) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
+            if (doc) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
             User.findByIdAndUpdate(req.params.id, { $push: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
@@ -116,6 +118,10 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
       });
 });
 
+/**
+ * values required:
+ * 
+ */
 // Remove existing favorite track from user tracks list
 router.put('/removeFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list

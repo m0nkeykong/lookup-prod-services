@@ -8,6 +8,7 @@ var UserSchema = new mongoose.Schema({
     profilePicture: {type: String, required: true},
     password: {String},
     phone: {Number},
+    // TODO: field must be with default value 0:
     accessibility: {Number},  // '0'-normal | '1'-blind | '2'-deaf
     favoriteTracks: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema"}],
     trackRecords: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema"}],
