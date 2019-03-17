@@ -3,55 +3,15 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      settings = require('../config'),
+      onlyNotEmpty = require('../controllers/onlyNotEmpty'), 
       bodyParser = require('body-parser');
-
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
-/************************** ROUTE: insertUser **************************/
-
-// exports.insertUser = (req, res) => {
-//       console.log("Enter route(POST): /insertUsers");
-
-//       // This will do the work
-//       const newUser = new User(req.body);
-//       newUser.save(err => {
-//             if (err) {
-//                   console.log(err);
-//                   return res.status(500).send({ "Message": "Internal server error" });
-//             }
-//             console.log(`User ${req.body.email} has been created successfully`);
-//             res.status(200).send(`User ${req.body.email} has been created successfully`);
-//       });
-// };
-
-/** insertUser
-    values required:
-        name, email, password, abirthDay, profilePicture
-    values can be null:
-        disables, accessibility
-**/
-// create User and return this user
-router.post('/insertUser', (req,res) => {
-      console.log("Enter route(POST): /insertUsers");
-
-      // This will do the work
-      const newUser = new User(req.body);
-      newUser.save((err,user) => {
-            if (err) {
-                  console.log(err);
-                  return res.status(500).send({ "Message": "Internal server error" });
-            }
-            console.log(`User ${req.body.email} has been created successfully`);
-            res.status(200).send(user);
-      });
-});
 
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
-      console.log("Enter route(GET): /getAllAccounts");
-
       User.find({}, (err, users) => {
             // Problem with user schema
             if (err) return res.status(500).send({ "message": "There was a problem finding the users." });
@@ -62,6 +22,7 @@ router.get('/getAllAccounts', (req, res) => {
       });
 });
 
+/*  */
 // Get Specific user data by id
 router.get('/getAccountDetails/:userid', (req, res) => {
       User.findById(req.params.userid, (err, user) => {
@@ -82,14 +43,14 @@ router.get('/getAccountDetailsByEmail/:email', (req, res) => {
             if (err) {
                   // Create new user with REQUIRED Parameters
                   if (req.params.email && req.body.name && req.body.birthDay && req.body.profilePicture) {
-                        let userDetauls = {
+                        let userDetails = {
                               email: req.params.email,
                               name: req.body.name,
                               birthDay: req.body.birthDay,
                               profilePicture: req.body.profilePicture,
                         }
                         // Create the document
-                        User.Create(userDetauls, (err, user) => {
+                        User.Create(userDetails, (err, user) => {
                               if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
                               if (!user) return res.status(404).send({ "message": "No user found" });
                               // Return the new created user
@@ -128,7 +89,7 @@ router.put('/updateAccountDetails/:userid', onlyNotEmpty, (req, res) => {
 // Delete user account
 router.delete('/deleteAccount/:userid', (req, res) => {
       // Find and remove account if existing
-      User.findByIdAndRemove(req.params.userid, (err, docs) => {
+      User.findByIdAndRemove(eq.params.userid, (err, docs) => {
             if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
             if (!docs) return res.status(404).send({ "message": "No user found" });
             console.log(`User: ${docs.name} deleted successfully`);
@@ -144,9 +105,9 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
                   { _id: req.params.userid },
                   { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
             ]
-      }, (err, doc) => {
+      }, (err, user) => {
             if (err) return res.status(500).send({ "message": "There was a problem searching" });
-            if (doc) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
+            if (user) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
             User.findByIdAndUpdate(req.params.id, { $push: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
@@ -156,10 +117,6 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
       });
 });
 
-/**
- * values required:
- * 
- */
 // Remove existing favorite track from user tracks list
 router.put('/removeFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list
