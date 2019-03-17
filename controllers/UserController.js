@@ -10,6 +10,22 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
 
+/** 
+    values required:
+        name, email, birthDay, profilePicture
+    values can be null:
+        password, phone, accessibility, favoriteTracks, trackRecords
+**/
+router.post('/insertUser', (req, res) => {
+      console.log("Enter route(POST): /insertTrack");
+      const newUser = new User(req.body);
+      newUser.save((err, track) => {
+            if (err) res.status(500).send(err);
+            else if (track) res.status(200).send(track);
+            else res.status(500).send("Error create user");
+      });
+});
+
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
       User.find({}, (err, users) => {
