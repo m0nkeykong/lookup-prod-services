@@ -91,54 +91,55 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 
 // });
 
-// router.delete('/deleteTrackBytitle/:title', (req, res) => {
-//       console.log("Enter route(DELETE): /deleteTrackBytitle");
-//       Track.findOne({ title: req.params.title }, (err, track) => {
-//             if (err) {
-//                   res.status(500).send(err);
-//             }
-//             else if (track) {
-//                   console.log(track);
-//                   // remove startPoint
-//                   Points.findByIdAndRemove(track.startPoint._id, err => {
-//                         if (err) res.status(500).send(err);
-//                   });
-//                   // remove endPoint                  
-//                   Points.findByIdAndRemove(track.endPoint._id, err => {
-//                         if (err) res.status(500).send(err);
-//                   });
-//                   // remove all middle Points 
-//                   track.middlePoint.forEach((element) => {
-//                         Points.findByIdAndRemove(element, err => {
-//                               if (err) res.status(500).send(err);
-//                         });
-//                   });
-//                   // find all users that have this track in "favoriteTracks" array and "trackRecords" array
-//                   deleteFavoriteTracksFromUsers(track._id).then((result, err) => {
-//                         if(err) console.log(`there was a problem with: deleteFavoriteTracksFromUsers `);
-//                         else{
-//                               deleteTrackRecordsFromUsers(track._id).then((result, err) => {
-//                               if (err)
-//                                     return res.status(200).send(err);
-//                               return res.status(200).send("Ok");
-//                               });
-//                         }
-//                   });
+router.delete('/deleteTrackBytitle/:title', (req, res) => {
+      console.log("Enter route(DELETE): /deleteTrackBytitle");
+      Track.findOne({ title: req.params.title }, (err, track) => {
+            if (err) {
+                  res.status(500).send(err);
+            }
+            else if (track) {
+                  console.log(track);
+                  // remove startPoint
+                  Points.findByIdAndRemove(track.startPoint._id, err => {
+                        if (err) res.status(500).send(err);
+                  });
+                  // remove endPoint                  
+                  Points.findByIdAndRemove(track.endPoint._id, err => {
+                        if (err) res.status(500).send(err);
+                  });
+                  // remove all middle Points 
+                  track.middlePoint.forEach((element) => {
+                        Points.findByIdAndRemove(element, err => {
+                              if (err) res.status(500).send(err);
+                        });
+                  });
+                  // find all users that have this track in "favoriteTracks" array and "trackRecords" array
+                  deleteFavoriteTracksFromUsers(track._id).then((result, err) => {
+                        if(err) console.log(`there was a problem with: deleteFavoriteTracksFromUsers `);
+                        else{
+                              deleteTrackRecordsFromUsers(track._id).then((result, err) => {
+                              if (err)
+                                    return res.status(200).send(err);
+                              
+                                    return res.status(200).send("Ok");
+                              });
+                        }
+                  });
 
-//                   // TODO: remove specific track!
-//                   // Track.findByIdAndRemove(track._id, (err, docs) => {
-//                   //       if (err) return res.status(400).send(err);
-//                   //       if (!docs) return res.status(404).send({ "Message": `Track title was not found in the system` });
-//                   //       console.log(`User: ${docs.title} deleted successfully`);
-//                   //       res.status(200).send(docs);
-//                   // });
-//             }
-//             else {
-//                   res.status(200).send("Track not exist");
-//             }
-//       });
+                  // TODO: remove specific track!
+                  // Track.findByIdAndRemove(track._id, (err, docs) => {
+                  //       if (err) return res.status(400).send(err);
+                  //       if (!docs) return res.status(404).send({ "Message": `Track title was not found in the system` });
+                  //       console.log(`User: ${docs.title} deleted successfully`);
+                  //       res.status(200).send(docs);
+                  // });
+            }
+            else {
+                  res.status(200).send("Track not exist");
+            }
+      });
 
-// });
+});
 
 // var deleteFavoriteTracksFromUsers = (trackId) => {
 //       return new Promise((resolve, reject) => {
@@ -217,56 +218,56 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 
 // }
 
-// var deleteTrackFromUsers = (id) => {            // return boolean
+var deleteTrackFromUsers = (id) => {            // return boolean
 
-//       return new Promise((resolve, reject) => {
-//             console.log("function: deleteTrackFromUsers");
+      return new Promise((resolve, reject) => {
+            console.log("function: deleteTrackFromUsers");
 
-//             User.find({ favoriteTracks: id }, (err, user) => {
-//                   console.log("333333");
+            User.find({ favoriteTracks: id }, (err, user) => {
+                  console.log("333333");
 
-//                   user.forEach((usr) => {
-//                         console.log("555555");
+                  user.forEach((usr) => {
+                        console.log("555555");
 
-//                         usr.favoriteTracks.forEach((element) => {
-//                               var cond = { favoriteTracks: element },
-//                                     update = { $pull: { favoriteTracks: id } },
-//                                     opts = { multi: true };
-//                               console.log("444444");
+                        usr.favoriteTracks.forEach((element) => {
+                              var cond = { favoriteTracks: element },
+                                    update = { $pull: { favoriteTracks: id } },
+                                    opts = { multi: true };
+                              console.log("444444");
 
-//                               User.update(cond, update, opts, err => {
-//                                     if (err) {
-//                                           console.log(err);
-//                                           console.log("991199");
+                              User.update(cond, update, opts, err => {
+                                    if (err) {
+                                          console.log(err);
+                                          console.log("991199");
 
-//                                           return false;
-//                                     }
-//                               });
-//                         });
-//                   })
-//             });
-//             console.log("1111111");
-//             User.find({ trackRecords: id }, (err, user) => {
-//                   user.forEach((usr) => {
-//                         usr.trackRecords.forEach((element) => {
-//                               var cond = { trackRecords: element },
-//                                     update = { $pull: { trackRecords: id } },
-//                                     opts = { multi: true };
-//                               console.log("2222222");
+                                          return false;
+                                    }
+                              });
+                        });
+                  })
+            });
+            console.log("1111111");
+            User.find({ trackRecords: id }, (err, user) => {
+                  user.forEach((usr) => {
+                        usr.trackRecords.forEach((element) => {
+                              var cond = { trackRecords: element },
+                                    update = { $pull: { trackRecords: id } },
+                                    opts = { multi: true };
+                              console.log("2222222");
 
-//                               User.update(cond, update, opts, err => {
-//                                     if (err) {
-//                                           console.log(err);
-//                                           console.log("992299");
+                              User.update(cond, update, opts, err => {
+                                    if (err) {
+                                          console.log(err);
+                                          console.log("992299");
 
-//                                           return false;
-//                                     }
-//                               });
-//                         });
-//                   })
-//             });
-//             return true;
-//       });
-// };
+                                          return false;
+                                    }
+                              });
+                        });
+                  })
+            });
+            return true;
+      });
+};
 
 module.exports = router;
