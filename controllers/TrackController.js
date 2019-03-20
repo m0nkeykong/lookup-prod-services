@@ -34,9 +34,7 @@ router.post('/insertTrack', (req, res) => {
 router.get('/getTrackByTitle/:title', (req, res) => {
       console.log("Enter route(GET): /getTrackByTitle");
 
-      Track.findOne({
-            title: req.params.title
-      }, (err, track) => {
+      Track.findOne({ title: req.params.title }, (err, track) => {
             if (err) res.status(500).send(err);
             else if (track) res.status(200).send(track);
             else res.status(500).send("Error find track");
@@ -50,9 +48,7 @@ router.get('/getTrackByTitle/:title', (req, res) => {
 router.get('/getTrackById/:trackId', (req, res) => {
       console.log("Enter route(GET): /getTrackById");
 
-      Track.findOne({
-            _id: req.params.trackId
-      }, (err, track) => {
+      Track.findOne({ _id: req.params.trackId }, (err, track) => {
             if (err) res.status(500).send(err);
             else if (track) res.status(200).send(track);
             else res.status(500).send("Error find track");
@@ -74,9 +70,7 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
       // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
             if (err) return res.status(500).send(err);
-            if (!docs) return res.status(404).send({
-                  "Message": `Track ID was not found in the system`
-            });
+            if (!docs) return res.status(404).send({"Message": `Track ID was not found in the system`});
             // console.log(`User: ${docs.title} updated successfully`);
             res.status(200).send(docs);
       });
@@ -89,7 +83,7 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 router.delete('/deleteTrack/:trackId', async (req, res) => {
 
       try {
-            trackId = req.params.trackId;
+            let trackId = req.params.trackId;
             await deleteStartPoint(trackId);
             await deleteEndPoint(trackId);
             await deleteMiddlePoint(trackId);
@@ -122,9 +116,7 @@ var deleteStartPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({
-                  _id: trackId
-            }, (err, res) => {
+            Track.findOne({ _id: trackId }, (err, res) => {
                   if (err) reject(err);
 
                   Points.findByIdAndRemove(res.startPoint._id, err => {
@@ -139,9 +131,7 @@ var deleteEndPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({
-                  _id: trackId
-            }, (err, res) => {
+            Track.findOne({ _id: trackId }, (err, res) => {
                   if (err) reject(err);
 
                   Points.findByIdAndRemove(res.startPoint._id, err => {
@@ -156,9 +146,7 @@ var deleteMiddlePoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({
-                  _id: trackId
-            }, (err, res) => {
+            Track.findOne({ _id: trackId }, (err, res) => {
                   if (err) reject(err);
 
                   res.middlePoint.forEach((element) => {
@@ -175,22 +163,12 @@ var deleteFavoriteTracksFromUsers = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteFavoriteTracksFromUsers");
 
-            User.find({
-                  favoriteTracks: trackId
-            }, (err, user) => {
+            User.find({ favoriteTracks: trackId }, (err, user) => {
                   if (err) reject(err);
                   user.forEach((usr) => {
-                        var cond = {
-                                    _id: usr._id
-                              },
-                              update = {
-                                    $pull: {
-                                          favoriteTracks: trackId
-                                    }
-                              },
-                              opts = {
-                                    multi: true
-                              };
+                        var cond = { _id: usr._id },
+                              update = {$pull: {favoriteTracks: trackId} },
+                              opts = { multi: true };
 
                         User.update(cond, update, opts, err => {
                               if (err) {
@@ -209,22 +187,12 @@ var deleteTrackRecordsFromUsers = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteTrackRecordsFromUsers");
 
-            User.find({
-                  trackRecords: trackId
-            }, (err, user) => {
+            User.find({ trackRecords: trackId }, (err, user) => {
                   if (err) reject(err);
                   user.forEach((usr) => {
-                        var cond = {
-                                    _id: usr._id
-                              },
-                              update = {
-                                    $pull: {
-                                          trackRecords: trackId
-                                    }
-                              },
-                              opts = {
-                                    multi: true
-                              };
+                        var cond = {_id: usr._id},
+                              update = {$pull: {trackRecords: trackId} },
+                              opts = {multi: true};
 
                         User.update(cond, update, opts, err => {
                               if (err) {
