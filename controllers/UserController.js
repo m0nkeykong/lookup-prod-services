@@ -10,11 +10,27 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
 
+/** 
+    values required:
+        name, email, birthDay, profilePicture
+    values can be null:
+        password, phone, accessibility, favoriteTracks, trackRecords
+**/
+router.post('/insertUser', (req, res) => {
+      console.log("Enter route(POST): /insertTrack");
+      const newUser = new User(req.body);
+      newUser.save((err, track) => {
+            if (err) res.status(500).send(err);
+            else if (track) res.status(200).send(track);
+            else res.status(500).send("Error create user");
+      });
+});
+
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
       User.find({}, (err, users) => {
             // Problem with user schema
-            if (err) return res.status(500).send({ "message": "There was a problem finding the users." });
+            if (err) return res.status(500).send(err);
             // There is no users in the system
             if (!users) return res.status(404).send({ "message": "No user found" });
             // Return the found users
@@ -27,7 +43,7 @@ router.get('/getAllAccounts', (req, res) => {
 router.get('/getAccountDetails/:userid', (req, res) => {
       User.findById(req.params.userid, (err, user) => {
             // Problem with user schema
-            if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
+            if (err) return res.status(500).send(err);
             // User not found
             if (!user) return res.status(404).send({ "message": "No user found" });
             // Return the found user
@@ -51,7 +67,7 @@ router.get('/getAccountDetailsByEmail/:email', (req, res) => {
                         }
                         // Create the document
                         User.Create(userDetails, (err, user) => {
-                              if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
+                              if (err) return res.status(500).send(err);
                               if (!user) return res.status(404).send({ "message": "No user found" });
                               // Return the new created user
                               res.status(200).send(user);
@@ -69,7 +85,7 @@ router.get('/getAccountDetailsByEmail/:email', (req, res) => {
 router.post('/createAccount', (req, res) => {
       const newUser = new User(req.body);
       newUser.save(err => {
-            if (err) return res.status(500).send({ "Message": "Internal server error" });
+            if (err) return res.status(500).send(err);
             console.log(`Account ${req.body.email} has been created successfully`);
             res.status(200).send(`Acount ${req.body.email} has been created successfully`);
       });
@@ -79,7 +95,7 @@ router.post('/createAccount', (req, res) => {
 router.put('/updateAccountDetails/:userid', onlyNotEmpty, (req, res) => {
       // Find and update user accounnt
       User.findByIdAndUpdate(req.params.userid, req.bodyNotEmpty, (err, docs) => {
-            if (err) return res.status(500).send({ "Message": `User ID was not found in the system` });
+            if (err) return res.status(500).send(err);
             if (!docs) return res.status(404).send({ "message": "No user found" });
             console.log(`User: ${docs.name} updated successfully`);
             res.status(200).send(docs);
@@ -90,7 +106,7 @@ router.put('/updateAccountDetails/:userid', onlyNotEmpty, (req, res) => {
 router.delete('/deleteAccount/:userid', (req, res) => {
       // Find and remove account if existing
       User.findByIdAndRemove(eq.params.userid, (err, docs) => {
-            if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+            if (err) return res.status(400).send(err);
             if (!docs) return res.status(404).send({ "message": "No user found" });
             console.log(`User: ${docs.name} deleted successfully`);
             res.status(200).send(docs);
@@ -106,11 +122,11 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
                   { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
             ]
       }, (err, user) => {
-            if (err) return res.status(500).send({ "message": "There was a problem searching" });
+            if (err) return res.status(500).send(err);
             if (user) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
             User.findByIdAndUpdate(req.params.id, { $push: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
-                  if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+                  if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was added successfully to user: ${newuser.name} favorite list`);
                   res.status(200).send(newuser);
             })
@@ -126,11 +142,11 @@ router.put('/removeFavoriteTrack/:userid', (req, res) => {
                   { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
             ]
       }, (err, user) => {
-            if (err) return res.status(500).send({ "message": "There was a problem searching" });
+            if (err) return res.status(500).send(err);
             if (!user) return res.status(404).send({ "message": "Track is not existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
             User.findByIdAndUpdate(req.params.id, { $pull: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
-                  if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+                  if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was removed successfully from user: ${newuser.name} favorite list`);
                   res.status(200).send(newuser);
             })
@@ -142,7 +158,7 @@ router.get('/getFavoriteTracksList/:userid', (req, res) => {
       // Search for given user docuemnt
       User.findById(req.params.userid, (err, user) => {
             // Problem with user schema
-            if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
+            if (err) return res.status(500).send(err);
             // User not found
             if (!user) return res.status(404).send({ "message": "No user found" });
             // Return the found user
@@ -159,11 +175,11 @@ router.get('/addTrackRecord/:userid', (req, res) => {
                   { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
             ]
       }, (err, user) => {
-            if (err) return res.status(500).send({ "message": "There was a problem searching" });
+            if (err) return res.status(500).send(err);
             if (user) return res.status(404).send({ "message": "Track already existing in records tracks list" });
             // Find user and update his trackRecords list
             User.findByIdAndUpdate(req.params.id, { $push: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
-                  if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+                  if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was added successfully to user: ${newuser.name} records list`);
                   res.status(200).send(newuser);
             })
@@ -179,11 +195,11 @@ router.get('/removeTrackRecord/:userid', (req, res) => {
                   { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
             ]
       }, (err, user) => {
-            if (err) return res.status(500).send({ "message": "There was a problem searching" });
+            if (err) return res.status(500).send(err);
             if (!user) return res.status(404).send({ "message": "Track is not existing in records tracks list" });
             // Find user and update his trackRecords list
             User.findByIdAndUpdate(req.params.id, { $pull: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
-                  if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+                  if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was removed successfully from user: ${newuser.name} records list`);
                   res.status(200).send(newuser);
             })
@@ -195,7 +211,7 @@ router.get('/getTrackRecordsList/:userid', (req, res) => {
       // Search for given user docuemnt
       User.findById(req.params.userid, (err, user) => {
             // Problem with user schema
-            if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
+            if (err) return res.status(500).send(err);
             // User not found
             if (!user) return res.status(404).send({ "message": "No user found" });
             // Return the found user
@@ -206,7 +222,7 @@ router.get('/getTrackRecordsList/:userid', (req, res) => {
 // Connect to BLE
 router.put('/linkBLE/:useridid', (req, res) => {
       User.findByIdAndUpdate(req.params.id, { BLE: req.body.bleid }, { new: true }, (err, newuser) => {
-            if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+            if (err) return res.status(400).send(err);
             console.log(`BLE ${req.body.bleid} was linked successfully to user: ${newuser.name}`);
             res.status(200).send(newuser);
       })
@@ -215,7 +231,7 @@ router.put('/linkBLE/:useridid', (req, res) => {
 // Disconnect from BLE
 router.put('/unlinkBLE/:userid', (req, res) => {
       User.findByIdAndUpdate(req.params.id, { $unset: { words: 1 } }, { multi: true }, { new: true }, (err, newuser) => {
-            if (err) return res.status(400).send({ "Message": `User ID was not found in the system` });
+            if (err) return res.status(400).send(err);
             console.log(`BLE ${req.body.bleid} was unlinked successfully to user: ${newuser.name}`);
             res.status(200).send(newuser);
       })
@@ -225,7 +241,7 @@ router.put('/unlinkBLE/:userid', (req, res) => {
 router.get('/getBLEStatus/:userid', (req, res) => {
       User.findById(req.params.userid, (err, user) => {
             // Problem with user schema
-            if (err) return res.status(500).send({ "message": "There was a problem finding the user." });
+            if (err) return res.status(500).send(err);
             // User not found
             if (!user) return res.status(404).send({ "message": "No user found" });
             // Return the found user
