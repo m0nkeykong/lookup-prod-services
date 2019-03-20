@@ -10,22 +10,6 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
 
-/** 
-    values required:
-        name, email, birthDay, profilePicture
-    values can be null:
-        password, phone, accessibility, favoriteTracks, trackRecords
-**/
-router.post('/insertUser', (req, res) => {
-      console.log("Enter route(POST): /insertTrack");
-      const newUser = new User(req.body);
-      newUser.save((err, track) => {
-            if (err) res.status(500).send(err);
-            else if (track) res.status(200).send(track);
-            else res.status(500).send("Error create user");
-      });
-});
-
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
       User.find({}, (err, users) => {
@@ -66,15 +50,15 @@ router.get('/getAccountDetailsByEmail/:email', (req, res) => {
                               profilePicture: req.body.profilePicture,
                         }
                         // Create the document
-                        User.Create(userDetails, (err, user) => {
+                        User.Create(userDetails, (err, newUser) => {
                               if (err) return res.status(500).send(err);
-                              if (!user) return res.status(404).send({ "message": "No user found" });
+                              if (!newUser) return res.status(404).send({ "message": "No user found" });
                               // Return the new created user
-                              res.status(200).send(user);
+                              res.status(200).send(newUser);
                         })
                   }
                   // Cannot create new user
-                  return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" }, { userDetauls });
+                  return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" }, { userDetails });
             }
             // Return the existing user    
             res.status(200).send(user);
