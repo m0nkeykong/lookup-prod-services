@@ -233,5 +233,7 @@ router.get('/getBLEStatus/:userid', (req, res) => {
       });
 });
 
+// checkCurrentLocationWithStartPoint
+// Add Promises to all "UPDATE" functions
 
 module.exports = router;
