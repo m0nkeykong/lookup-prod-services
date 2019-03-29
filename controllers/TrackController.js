@@ -45,7 +45,7 @@ router.get('/getTrackByTitle/:title', (req, res) => {
 
 /** 
     values required:
-         title
+         trackId
 **/
 router.get('/getTrackById/:trackId', (req, res) => {
       console.log("Enter route(GET): /getTrackById");
@@ -84,9 +84,82 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 
 /** 
     values required:
+         city
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:city', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCity");
+
+      var result = [], pointsArr = [];
+      city = req.params.city;
+      // 
+      
+
+      Points.find({city: city}, (err,points)=>{
+            points.forEach( p => {
+                  pointsArr.push(p);
+                  Track.find({startPoint:p._id}, (err,tracks) => {
+                        if (err) es.status(500).send(err);
+                        tracks.forEach( track => {
+                              result.indexOf(track) === -1 ? result.push(track) : [] ;
+                        })
+                  })
+            })
+            res.status(200).send(result);
+      })
+
+
+
+      // Track.find({}, (err, tracks) => {
+
+      //       try{
+                  
+      //             tracks.forEach(track => {
+      //                   // await overAllPointsOfTrack(track,city).then(res=>{
+      //                   //       if(res)
+      //                   //             result.push(track);  
+      //                   // });
+      //             })
+
+      //             res.status(200).send(result);
+
+      //       }catch(e){
+      //             res.status(500).send("Error find tracks");
+      //       }
+
+      //       // if (err) res.status(500).send(err);
+      //       // else if (tracks) res.status(200).send(tracks);
+      //       // else 
+      // });
+});
+
+var overAllPointsOfTrack = async (track, city) => {   // return boolean
+
+      return new Promise((resolve, reject) => {
+            console.log("function: overAllPointsOfTrack");
+
+            track.forEach(element=>{
+                  console.log(`element: ${element}`);
+                  resolve(true);
+            })
+            // Point.findOne(trackId, (err, docs) => {
+            //       if (err) return reject(err);
+
+            //       console.log(`User: ${docs.title} deleted successfully`);
+            //       resolve(true);
+            // })
+      })
+}
+
+
+/** 
+    values required:
          trackId
 **/
 router.delete('/deleteTrack/:trackId', async (req, res) => {
+
+      console.log("Enter route(GET): /deleteTrack");
 
       try {
             trackId = req.params.trackId;

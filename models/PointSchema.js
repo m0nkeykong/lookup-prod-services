@@ -2,6 +2,10 @@ var mongoose = require('mongoose');
 
 var PointSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.ObjectId,
+    city: {
+        type: String,
+        required: true
+    },
     longtitude: {
         type: Number,
         required: true
