@@ -143,8 +143,6 @@ router.get('/getTracksByCity/:city', async (req, res) => {
       city = req.params.city;
 
       try{
-
-         
             let points = await findPointsByCity(city);
             let tracks = await findTracksByPoints(points);
             let results = await pushTracksToArray(tracks);
