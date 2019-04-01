@@ -47,62 +47,43 @@ router.get('/getTrackByTitle/:title', (req, res) => {
     values required:
          trackId
 **/
-// router.get('/getTrackById/:trackId', (req, res) => {
-//       console.log("Enter route(GET): /getTrackById");
+router.get('/getTrackDetailsById/:trackId', (req, res) => {
+      console.log("Enter route(GET): /getTrackById");
 
-//       Track.findOne({
-//             _id: req.params.trackId
-//       }, (err, track) => {
-//             if (err) res.status(500).send(err);
-//             else if (track) res.status(200).send(track);
-//             else res.status(500).send("Error find track");
-//       });
-// });
+      Track.findOne({
+            _id: req.params.trackId
+      }, (err, track) => {
+            if (err) res.status(500).send(err);
+            else if (track) res.status(200).send(track);
+            else res.status(500).send("Error find track");
+      });
+});
 
+/** getTrackById
+    values required:
+         trackId
+**/
 router.get('/getTrackById/:trackId', async (req, res) => {
       console.log("Enter route(GET): /getTrackById");
 
       try{
             let id = req.params.trackId;
-            let track = await getTrackById(id); 
-            // let startPoint = await getPoint(track.startPoint); 
-            // let endPoint = await getPoint(track.endPoint); 
-            // let middlePoint = await getPoints(track.middlePoint); 
-            // let result = await prepareResponse(track,startPoint,endPoint)
-            res.status(200).send(track); 
-
-      }catch(e){
-            res.status(400).send(e);
+            let track = await getTrackById(id);
+            let startPoint = await getPoint(track.startPoint);
+            let endPoint = await getPoint(track.endPoint); 
+            let middlePoint;
+            if( !(track.middlePoint.length == 0) ) {
+                  middlePoint = await getPoints(track.middlePoint); 
+                  console.log("MIDDLEEEEE:");
+                  console.log(middlePoint);
+            }
+            let result = await prepareResponse(track,startPoint,endPoint,middlePoint);
+            return res.status(200).send(result); 
+      } catch(e){
+            res.status(400).send(e.message);
       }
         
 });
-
-
-var getTrackById = async (trackId) => {
-      console.log(`function: getTrackById => ${trackId}`);
-      return Track.findOne({_id: trackId});
-}
-
-var getPoint = async (pointId) => {
-      console.log(`function: getPoint => ${pointId}`);
-      // return Point.findById({_id: pointId});
-
-      return new Promise((resolve, reject) => {
-            Point.find({_id: pointId}).then( (err,res)=>{
-                  console.log(res);
-            });
-      })
-}
-
-var prepareResponse = async (track, startPoint, endPoint, middlePoints = []) => {
-      return new Promise((resolve, reject) => {
-            console.log("function: deleteSpecificTrack");
-
-            return {
-
-            }
-      })
-}
 
 router.get('/getAllTracks', (req, res) => {
       console.log("Enter route(GET): /getAllTracks");
@@ -183,11 +164,41 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 /** ---------------------------- functions ---------------------------- */
 
-var findPointsByCity = async (city) => {
-      // return new Promise((resolve, reject) => {
+var getTrackById = async (trackId) => {
+      console.log(`function: getTrackById => ${trackId}`);
+      return Track.findOne({_id: trackId});
+}
 
-            return Points.find({city: city});
-      // })
+var getPoint = async (pointId) => {
+      console.log(`function: getPoint => ${pointId}`);
+      return Points.findById({_id: pointId});
+}
+
+var getPoints = async (pointsId) => {
+      console.log(`function: getPoints => ${pointsId}`);
+      let results = [];
+      let promises = [];
+
+      pointsId.forEach( element => {
+            promises.push(Points.findById({_id:element._id}));
+      })
+      return Promise.all(promises);
+}
+
+var prepareResponse = async (_track, _startPoint, _endPoint, _middlePoints = []) => {
+      return new Promise((resolve, reject) => {
+            console.log("function: prepareResponse");
+            result = new Object()
+            result.track = _track;
+            result.startPoint = _startPoint;  
+            result.endPoint = _endPoint;  
+            result.middlePoints = _middlePoints;
+            resolve(result);
+      })
+}
+
+var findPointsByCity = async (city) => {
+      return Points.find({city: city});
 }
 
 var findTracksByPoints = async (points) => {
