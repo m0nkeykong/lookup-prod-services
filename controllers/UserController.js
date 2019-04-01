@@ -9,7 +9,6 @@ const express = require('express'),
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
-
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
       User.find({}, (err, users) => {
@@ -36,32 +35,39 @@ router.get('/getAccountDetails/:userid', (req, res) => {
 });
 
 // Login with existing user or new user
-router.get('/getAccountDetailsByEmail/:email', (req, res) => {
+router.post('/getAccountDetailsByEmail/:email', (req, res) => {
       // Find existing user by email
-      User.findOne({ email: { email: { $eq: req.params.email } } }, (err, user) => {
+      console.log("hello");
+      var userDetails;
+      User.findOne({ email: req.params.email }, (err, user) => {
             // User is not existing in data base
-            if (err) {
+            if (!user) {
                   // Create new user with REQUIRED Parameters
-                  if (req.params.email && req.body.name && req.body.birthDay && req.body.profilePicture) {
-                        let userDetails = {
+                  if (req.params.email && req.body.name && req.body.imageUrl) {
+                        userDetails = {
                               email: req.params.email,
                               name: req.body.name,
-                              birthDay: req.body.birthDay,
-                              profilePicture: req.body.profilePicture,
+                              profilePicture: req.body.imageUrl,
+                              createdDate: new Date().getTime()
                         }
+                        console.log(userDetails);
                         // Create the document
-                        User.Create(userDetails, (err, newUser) => {
+                        User.create(userDetails, (err, newUser) => {
                               if (err) return res.status(500).send(err);
                               if (!newUser) return res.status(404).send({ "message": "No user found" });
                               // Return the new created user
+                              console.log("create");
                               res.status(200).send(newUser);
                         })
                   }
                   // Cannot create new user
-                  return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" }, { userDetails });
+                  else return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" });
             }
-            // Return the existing user    
-            res.status(200).send(user);
+            else{
+                  // Return the existing user   
+                  console.log("create2"); 
+                  return res.status(200).send(user);
+            }
       });
 });
 

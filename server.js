@@ -31,6 +31,7 @@ app.use('/point', PointController);
 
 app.all('*', (req, res, next) => {
     res.status(404).send({ "Message": `This page was not found` });
+    next();
 });
 
 // app.post('/login', userController.insertUser);
