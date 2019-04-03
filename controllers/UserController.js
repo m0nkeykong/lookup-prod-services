@@ -32,7 +32,7 @@ router.get('/getAllAccounts', (req, res) => {
             // Problem with user schema
             if (err) return res.status(500).send({ "message": "There was a problem finding the users." });
             // There is no users in the system
-            if (!user) return res.status(404).send({ "message": "No user found" });
+            if (!users) return res.status(404).send({ "message": "No user found" });
             // Return the found users
             res.status(200).send(users);
       });
