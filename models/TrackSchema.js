@@ -37,8 +37,8 @@ var TrackSchema = new mongoose.Schema({
       title: {
             type: String,
             required: true,
-            unique: true,
-            validate: isUnique
+            unique: true
+            // validate: isUnique
       },
       comment: [String],
       rating: {
