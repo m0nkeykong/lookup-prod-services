@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ReutLeib/LookUp_Final_Project/tree/master/LookUp_Server_side"
+    "url": "git+https://github.com/m0nkeykong/lookup-prod-services"
   },
   "author": "Reut Leib, Roni Polisanov, Haim Elbaz",
   "license": "ISC"
