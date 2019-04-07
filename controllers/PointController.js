@@ -13,7 +13,7 @@ router.use(bodyParser.urlencoded({
     values required:
         type, title, startPoint-id, endPoint-id
     values can be null:
-        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertPoint', (req, res) => {
       console.log("Enter route(POST): /insertPoint");

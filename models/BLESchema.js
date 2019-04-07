@@ -2,7 +2,7 @@ var mongoose  = require('mongoose');
 
 var BLESchema = new mongoose.Schema({
       id: mongoose.Schema.Types.ObjectId,
-      Longtitude: {type: Number, required: true},
+      Longitude: {type: Number, required: true},
       Latitude: {type: Number, required: true},
       deviceName: {type: String, required: true},
       writeData: {type: Number},      // boolean

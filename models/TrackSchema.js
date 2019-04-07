@@ -26,7 +26,7 @@ var TrackSchema = new mongoose.Schema({
             ref: "PointSchema",
             required: true
       },
-      middlePoint: [{
+      wayPoints: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "PointSchema"
       }],
@@ -44,7 +44,8 @@ var TrackSchema = new mongoose.Schema({
             unique: true
             // validate: isUnique
       },
-      comment: [String],
+      comments: [String],
+      duration: Number,
       rating: {
             type: Number
       },
