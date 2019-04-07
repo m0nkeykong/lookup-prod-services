@@ -15,7 +15,7 @@ router.use(bodyParser.urlencoded({
     values required:
         type, title, startPoint-id, endPoint-id
     values can be null:
-        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -67,13 +67,13 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let track = await getTrackById(id);
             let startPoint = await getPoint(track.startPoint);
             let endPoint = await getPoint(track.endPoint); 
-            let middlePoint;
-            if( !(track.middlePoint.length == 0) ) {
-                  middlePoint = await getPoints(track.middlePoint); 
+            let wayPoints;
+            if( !(track.wayPoints.length == 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
                   console.log("MIDDLEEEEE:");
-                  console.log(middlePoint);
+                  console.log(wayPoints);
             }
-            let result = await prepareResponse(track,startPoint,endPoint,middlePoint);
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -113,23 +113,92 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 router.get('/getTracksByCity/:city', async (req, res) => {
       console.log("Enter route(GET): /getTracksByCity");
 
-      var result = [], pointsArr = [];
-      var points;
-      city = req.params.city;
+      var city = req.params.city;
 
       try{
             let points = await findPointsByCity(city);
-            let tracks = await findTracksByPoints(points);
-            let results = await pushTracksToArray(tracks);
+            let tracks = await findTracksByStartPoint(points);
+            let results = await pushTracksToArrayNoRepeats(tracks);
 
             res.status(200).send(results);
 
       } catch(e){
             console.log("there was error in 'getTracksByCity' function!");
             console.log(e);
-            res.status(500).send(e);
+            res.status(400).send(e);
       }
 });
+
+/** 
+    values required:
+         city
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCities");
+
+      try{
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let results = await pushTracksToArrayNoRepeats(tracksType);
+ 
+            // if(results.length == 0)
+            //       res.status(401).send(results);
+            res.status(200).send(results);
+
+      } catch(e){
+            console.log("there was error in 'getTracksByCities' function!");
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
+var filterTracksByType = async (tracks, type) => {
+
+      let result = [];
+      return new Promise((resolve, reject) => {
+            console.log("function: filterTracksByType")
+            if(tracks){
+                  tracks.forEach( track => {
+                        if( !(track.length == 0) ){
+                              track.forEach(element => {
+                                    console.log("aaaaaaaaaaa");
+                                    console.log(element);
+                                    // track not empty
+                                    if(element.type == type) {
+                                          console.log(`TRACK TYPE: ${element.type}`);
+                                          // console.log(`push ${track} to result array in function: findTracksByPointId`);
+                                          result.push(element);
+                                    }
+                              })
+                        }
+                  })
+                  console.log("TRACKSSSS:");
+                  console.log(result);
+                   resolve(result);
+            }
+            else
+                  reject("something wrong in 'filterTracksByType' function");
+      })
+      
+}
+
+var findTracksPoints = async (startPoints, endPoints) => {
+      console.log(`function: findTracksByStartPoint`);
+      let promises = [];
+      startPoints.forEach( start => {
+            endPoints.forEach( end => {
+                  // $or:[{region: "NA"},{sector:"Some Sector"}]
+                  promises.push(Track.find({startPoint:start._id, endPoint:end._id}));
+            })
+      })
+
+      return Promise.all(promises);
+      
+}
 
 /** 
     values required:
@@ -143,7 +212,7 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
             let trackId = req.params.trackId;
             await deleteStartPoint(trackId);
             await deleteEndPoint(trackId);
-            await deleteMiddlePoint(trackId);
+            await deleteWayPoint(trackId);
             await deleteFavoriteTracksFromUsers(trackId);
             await deleteTrackRecordsFromUsers(trackId);
             await deleteSpecificTrack(trackId);
@@ -157,6 +226,7 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 });
 
 /** ---------------------------- functions ---------------------------- */
+
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
@@ -179,14 +249,14 @@ var getPoints = async (pointsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _middlePoints = []) => {
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
             result.track = _track;
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
-            result.middlePoints = _middlePoints;
+            result.wayPoints = _wayPoints;
             resolve(result);
       })
 }
@@ -195,7 +265,7 @@ var findPointsByCity = async (city) => {
       return Points.find({city: city});
 }
 
-var findTracksByPoints = async (points) => {
+var findTracksByStartPoint = async (points) => {
       let promises = [];
       points.forEach( element => {
             promises.push(Track.find({startPoint:element._id}));
@@ -204,10 +274,10 @@ var findTracksByPoints = async (points) => {
       return Promise.all(promises);
 }
 
-var pushTracksToArray = (tracks) => {
+var pushTracksToArrayNoRepeats = (tracks) => {
       let result = [];
       return new Promise((resolve, reject) => {
-            console.log("function: pushTracksToArray")
+            console.log("function: pushTracksToArrayNoRepeats")
             if(tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
@@ -218,12 +288,12 @@ var pushTracksToArray = (tracks) => {
                               }
                         }
                   })
-                  console.log("TRACKSSSSSSSSSSSSSS:");
+                  console.log("TRACKSSSS:");
                   console.log(result);
                    resolve(result);
             }
             else
-                  reject("something wrong in 'pushTracksToArray' function");
+                  reject("something wrong in 'pushTracksToArrayNoRepeats' function");
       })
        
 }
@@ -271,14 +341,14 @@ var deleteEndPoint = async (trackId) => {
       });
 }
 
-var deleteMiddlePoint = async (trackId) => {
+var deleteWayPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
             Track.findOne({ _id: trackId }, (err, res) => {
                   if (err) reject(err);
 
-                  res.middlePoint.forEach((element) => {
+                  res.wayPoints.forEach((element) => {
                         Points.findByIdAndRemove(element, err => {
                               if (err) reject(err);
                         });
