@@ -150,7 +150,9 @@ router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
             let tracks = await findTracksPoints(startPoints,endPoints);
             let tracksType = await filterTracksByType(tracks,req.params.type);
             let results = await pushTracksToArrayNoRepeats(tracksType);
-
+ 
+            // if(results.length == 0)
+            //       res.status(401).send(results);
             res.status(200).send(results);
 
       } catch(e){
