@@ -26,14 +26,17 @@ var TrackSchema = new mongoose.Schema({
             ref: "PointSchema",
             required: true
       },
+      // Change to middlePoints
       middlePoint: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "PointSchema"
       }],
+      // Change to travelMode
       type: {
             type: String,
             required: true
       },
+      // What is title?!?!
       title: {
             type: String,
             required: true,
@@ -47,6 +50,7 @@ var TrackSchema = new mongoose.Schema({
       changesDuringTrack: {
             type: Boolean
       },
+      // Change to fiffucultyLevel
       diffucultyLevel: {
             type: Number
       }

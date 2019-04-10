@@ -3,13 +3,11 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({
-      extended: true
-}));
+router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
