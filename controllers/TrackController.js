@@ -67,9 +67,10 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let track = await getTrackById(id);
             let startPoint = await getPoint(track.startPoint);
             let endPoint = await getPoint(track.endPoint); 
-            let middlePoint;
-            if( !(track.middlePoint.length == 0) ) {
-                  middlePoint = await getPoints(track.middlePoint); 
+            let wayPoints;
+            
+            if( !(track.wayPoints.length == 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
                   console.log("MIDDLEEEEE:");
                   console.log(middlePoint);
             }
