@@ -30,6 +30,10 @@ var TrackSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "PointSchema"
       }],
+      comments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "CommentsSchema"
+      }],
       type: {
             type: String,
             required: true
@@ -44,7 +48,6 @@ var TrackSchema = new mongoose.Schema({
             unique: true
             // validate: isUnique
       },
-      comments: [String],
       duration: Number,
       rating: {
             type: Number
