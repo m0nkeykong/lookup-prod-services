@@ -15,7 +15,7 @@ router.use(bodyParser.urlencoded({
     values required:
         type, title, startPoint-id, endPoint-id
     values can be null:
-        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comment, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -71,10 +71,10 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             
             if( !(track.wayPoints.length == 0) ) {
                   wayPoints = await getPoints(track.wayPoints); 
-                  console.log("MIDDLEEEEE:");
-                  console.log(middlePoint);
+                  console.log("wayPoints:");
+                  console.log(wayPoints);
             }
-            let result = await prepareResponse(track,startPoint,endPoint,middlePoint);
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -180,14 +180,14 @@ var getPoints = async (pointsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _middlePoints = []) => {
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
             result.track = _track;
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
-            result.middlePoints = _middlePoints;
+            result.wayPoints = _wayPoints;
             resolve(result);
       })
 }
@@ -279,7 +279,7 @@ var deleteMiddlePoint = async (trackId) => {
             Track.findOne({ _id: trackId }, (err, res) => {
                   if (err) reject(err);
 
-                  res.middlePoint.forEach((element) => {
+                  res.wayPoints.forEach((element) => {
                         Points.findByIdAndRemove(element, err => {
                               if (err) reject(err);
                         });
