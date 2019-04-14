@@ -163,6 +163,34 @@ router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
       }
 });
 
+/** 
+    values required:
+         trackId
+**/
+router.delete('/deleteTrack/:trackId', async (req, res) => {
+
+      console.log("Enter route(GET): /deleteTrack");
+
+      try {
+            trackId = req.params.trackId;
+            await deleteStartPoint(trackId);
+            await deleteEndPoint(trackId);
+            await deleteWayPoint(trackId);
+            await deleteFavoriteTracksFromUsers(trackId);
+            await deleteTrackRecordsFromUsers(trackId);
+            await deleteSpecificTrack(trackId);
+
+            res.status(200).send(`OK`);
+
+      } catch (e) {
+            res.status(500).send(`NOT OK`);
+      }
+
+});
+
+/** ---------------------------- functions ---------------------------- */
+
+
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
@@ -172,8 +200,6 @@ var filterTracksByType = async (tracks, type) => {
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               track.forEach(element => {
-                                    console.log("aaaaaaaaaaa");
-                                    console.log(element);
                                     // track not empty
                                     if(element.type == type) {
                                           console.log(`TRACK TYPE: ${element.type}`);
@@ -206,34 +232,6 @@ var findTracksPoints = async (startPoints, endPoints) => {
       return Promise.all(promises);
       
 }
-
-/** 
-    values required:
-         trackId
-**/
-router.delete('/deleteTrack/:trackId', async (req, res) => {
-
-      console.log("Enter route(GET): /deleteTrack");
-
-      try {
-            trackId = req.params.trackId;
-            await deleteStartPoint(trackId);
-            await deleteEndPoint(trackId);
-            await deleteWayPoint(trackId);
-            await deleteFavoriteTracksFromUsers(trackId);
-            await deleteTrackRecordsFromUsers(trackId);
-            await deleteSpecificTrack(trackId);
-
-            res.status(200).send(`OK`);
-
-      } catch (e) {
-            res.status(500).send(`NOT OK`);
-      }
-
-});
-
-/** ---------------------------- functions ---------------------------- */
-
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
