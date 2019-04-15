@@ -41,4 +41,19 @@ router.delete('/deleteCommentById/:id', (req, res) => {
       });
 });
 
+/** 
+    values required:
+        id
+**/
+router.get('/getCommentById/:id', (req, res) => {
+      console.log("Enter route(GET): /getCommentsById");
+     
+      //Find and remove point if exist
+      CommentSchema.findById(req.params.id, (err, docs) => {
+            if (err) return res.status(500).send(err);
+            else if (docs) return res.status(200).send(docs);
+            else res.status(500).send("Error delete point");
+      });
+});
+
 module.exports = router;
