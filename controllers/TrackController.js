@@ -3,6 +3,7 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
+      Comments = require('../models/CommentsSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
@@ -59,6 +60,33 @@ router.get('/getTrackDetailsById/:trackId', (req, res) => {
       });
 });
 
+// /** getTrackById
+//     values required:
+//          trackId
+// **/
+// router.get('/getTrackById/:trackId', async (req, res) => {
+//       console.log("Enter route(GET): /getTrackById");
+
+//       try{
+//             let id = req.params.trackId;
+//             let track = await getTrackById(id);
+//             let startPoint = await getPoint(track.startPoint);
+//             let endPoint = await getPoint(track.endPoint); 
+//             let wayPoints;
+            
+//             if( !(track.wayPoints.length == 0) ) {
+//                   wayPoints = await getPoints(track.wayPoints); 
+//                   console.log("MIDDLEEEEE:");
+//                   console.log(wayPoints);
+//             }
+//             let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
+//             return res.status(200).send(result); 
+//       } catch(e){
+//             res.status(400).send(e.message);
+//       }
+        
+// });
+
 /** getTrackById
     values required:
          trackId
@@ -73,12 +101,19 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let endPoint = await getPoint(track.endPoint); 
             let wayPoints;
             
-            if( !(track.wayPoints.length == 0) ) {
+            if( (track.wayPoints.length !== 0) ) {
                   wayPoints = await getPoints(track.wayPoints); 
                   console.log("MIDDLEEEEE:");
                   console.log(wayPoints);
             }
-            let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
+
+            if( (track.comments.length !== 0) ) {
+                  comments = await getComments(track.comments); 
+                  console.log("comments:");
+                  console.log(comments);
+            }
+
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -245,7 +280,6 @@ var getPoint = async (pointId) => {
 
 var getPoints = async (pointsId) => {
       console.log(`function: getPoints => ${pointsId}`);
-      let results = [];
       let promises = [];
 
       pointsId.forEach( element => {
@@ -254,7 +288,18 @@ var getPoints = async (pointsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
+var getComments = async (commentsId) => {
+      console.log(`function: getComments => ${commentsId}`);
+      let results = [];
+      let promises = [];
+
+      commentsId.forEach( element => {
+            promises.push(Comments.findById({_id:element._id}));
+      })
+      return Promise.all(promises);
+}
+
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
@@ -262,6 +307,7 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = []) =>
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
             result.wayPoints = _wayPoints;
+            result.comments = _comments;
             resolve(result);
       })
 }
