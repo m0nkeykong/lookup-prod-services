@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
       settings = require('../config'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'), 
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'), 
       bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -106,10 +106,10 @@ router.delete('/deleteAccount/:userid', (req, res) => {
 // Add new favorite track to user tracks list
 router.put('/addFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
+                  { "favoriteTracks": { $elemMatch: { $in: [req.body.trackid] } } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
@@ -126,7 +126,7 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
 // Remove existing favorite track from user tracks list
 router.put('/removeFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
                   { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
@@ -157,18 +157,19 @@ router.get('/getFavoriteTracksList/:userid', (req, res) => {
 });
 
 // Add new track record to user track records list
-router.get('/addTrackRecord/:userid', (req, res) => {
+router.put('/addTrackRecord/:userid', (req, res) => {
       // Check if track already existing in user records list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
+                  // { "trackRecords": {$elemMatch: {$in: [req.body.trackid]}} }
+                  { "trackRecords": {$in: [req.body.trackid]} }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
-            if (user) return res.status(404).send({ "message": "Track already existing in records tracks list" });
+            if (user) return res.status(404).send({ "message": "Track already existing in records tracks list" + user});
             // Find user and update his trackRecords list
-            User.findByIdAndUpdate(req.params.id, { $push: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
+            User.findByIdAndUpdate(req.params.userid, { $push: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was added successfully to user: ${newuser.name} records list`);
                   res.status(200).send(newuser);
@@ -177,9 +178,9 @@ router.get('/addTrackRecord/:userid', (req, res) => {
 });
 
 // Remove track record
-router.get('/removeTrackRecord/:userid', (req, res) => {
+router.put('/removeTrackRecord/:userid', (req, res) => {
       // Check if track already existing in user records list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
                   { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
@@ -210,7 +211,7 @@ router.get('/getTrackRecordsList/:userid', (req, res) => {
 });
 
 // Connect to BLE
-router.put('/linkBLE/:useridid', (req, res) => {
+router.put('/linkBLE/:userid', (req, res) => {
       User.findByIdAndUpdate(req.params.id, { BLE: req.body.bleid }, { new: true }, (err, newuser) => {
             if (err) return res.status(400).send(err);
             console.log(`BLE ${req.body.bleid} was linked successfully to user: ${newuser.name}`);

@@ -55,6 +55,7 @@ var TrackSchema = new mongoose.Schema({
       changesDuringTrack: {
             type: Boolean
       },
+      // Change to fiffucultyLevel
       diffucultyLevel: {
             type: Number
       }
