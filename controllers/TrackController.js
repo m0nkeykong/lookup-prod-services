@@ -60,33 +60,6 @@ router.get('/getTrackDetailsById/:trackId', (req, res) => {
       });
 });
 
-// /** getTrackById
-//     values required:
-//          trackId
-// **/
-// router.get('/getTrackById/:trackId', async (req, res) => {
-//       console.log("Enter route(GET): /getTrackById");
-
-//       try{
-//             let id = req.params.trackId;
-//             let track = await getTrackById(id);
-//             let startPoint = await getPoint(track.startPoint);
-//             let endPoint = await getPoint(track.endPoint); 
-//             let wayPoints;
-            
-//             if( !(track.wayPoints.length == 0) ) {
-//                   wayPoints = await getPoints(track.wayPoints); 
-//                   console.log("MIDDLEEEEE:");
-//                   console.log(wayPoints);
-//             }
-//             let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
-//             return res.status(200).send(result); 
-//       } catch(e){
-//             res.status(400).send(e.message);
-//       }
-        
-// });
-
 /** getTrackById
     values required:
          trackId
@@ -111,6 +84,9 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   comments = await getComments(track.comments); 
                   console.log("comments:");
                   console.log(comments);
+                  userDetails = await getUserDetailsOfEachComment(comments); 
+                  console.log("userDetails:");
+                  console.log(userDetails);
             }
 
             let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments);
@@ -290,11 +266,20 @@ var getPoints = async (pointsId) => {
 
 var getComments = async (commentsId) => {
       console.log(`function: getComments => ${commentsId}`);
-      let results = [];
       let promises = [];
 
       commentsId.forEach( element => {
             promises.push(Comments.findById({_id:element._id}));
+      })
+      return Promise.all(promises);
+}
+
+var getUserDetailsOfEachComment = async (commentsId) => {
+      console.log(`function: getUserDetailsOfEachComment => ${commentsId}`);
+      let promises = [];
+
+      commentsId.forEach( element => {
+            promises.push(User.findById({_id:element.userId}));
       })
       return Promise.all(promises);
 }
