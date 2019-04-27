@@ -152,7 +152,6 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 //from the same city and this track will be returned
 router.get('/getTracksByCity/:city', async (req, res) => {
       console.log("Enter route(GET): /getTracksByCity");
-
       var city = req.params.city;
 
       try{
@@ -169,32 +168,6 @@ router.get('/getTracksByCity/:city', async (req, res) => {
       }
 });
 
-/** 
-    values required:
-         city
-**/
-// once there is one point at 'startPoint' or 'endPoint' 
-//from the same city and this track will be returned
-router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
-      console.log("Enter route(GET): /getTracksByCities");
-
-      try{
-            let startPoints = await findPointsByCity(req.params.from);
-            let endPoints = await findPointsByCity(req.params.to);
-            let tracks = await findTracksPoints(startPoints,endPoints);
-            let tracksType = await filterTracksByType(tracks,req.params.type);
-            let results = await pushTracksToArrayNoRepeats(tracksType);
- 
-            // if(results.length == 0)
-            //       res.status(401).send(results);
-            res.status(200).send(results);
-
-      } catch(e){
-            console.log("there was error in 'getTracksByCities' function!");
-            console.log(e);
-            res.status(400).send(e);
-      }
-});
 
 /** 
     values required:
@@ -221,14 +194,59 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 });
 
+
+/** 
+    values required:
+         city
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCities");
+
+      try{
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let results = await pushTracksToArrayNoRepeats(tracksType);
+
+            // Check if we got track list or not
+            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(results);
+
+      } catch(e){
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
 /** ---------------------------- functions ---------------------------- */
 
+var findTracksPoints = async (startPoints, endPoints) => {
+      console.log("Entered findTracksPoints()");
+      return new Promise((resolve, reject) => {
+            var actions = Promise.all(startPoints.map(start => {
+                  return new Promise((resolve, reject) => {
+                        Track.find({ startPoint: start._id, endPoint: { $in: endPoints } }, (err, doc) => {
+                              if (doc) resolve(doc);
+                              if (err) reject(err);
+                              else resolve(null);
+                        })
+                  })
+            })
+            );
+            actions.then(data => {
+                  resolve(data);
+            })
+      });
+}
 
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
       return new Promise((resolve, reject) => {
-            console.log("function: filterTracksByType")
+            console.log("Entered filterTracksByType()");
             if(tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
@@ -242,9 +260,8 @@ var filterTracksByType = async (tracks, type) => {
                               })
                         }
                   })
-                  console.log("TRACKSSSS:");
                   console.log(result);
-                   resolve(result);
+                  resolve(result);
             }
             else
                   reject("something wrong in 'filterTracksByType' function");
@@ -252,19 +269,6 @@ var filterTracksByType = async (tracks, type) => {
       
 }
 
-var findTracksPoints = async (startPoints, endPoints) => {
-      console.log(`function: findTracksByStartPoint`);
-      let promises = [];
-      startPoints.forEach( start => {
-            endPoints.forEach( end => {
-                  // $or:[{region: "NA"},{sector:"Some Sector"}]
-                  promises.push(Track.find({startPoint:start._id, endPoint:end._id}));
-            })
-      })
-
-      return Promise.all(promises);
-      
-}
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
@@ -311,13 +315,16 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _c
 }
 
 var findPointsByCity = async (city) => {
-      return Points.find({city: city});
+      return new Promise((resolve, reject) => {
+            console.log("Entered findPointsByCity()");
+            resolve(Points.find({city: city}).distinct('_id'));
+      });
 }
 
 var findTracksByStartPoint = async (points) => {
       let promises = [];
       points.forEach( element => {
-            promises.push(Track.find({startPoint:element._id}));
+            promises.push(Track.find({startPoint: element._id}));
       })
 
       return Promise.all(promises);
@@ -326,7 +333,7 @@ var findTracksByStartPoint = async (points) => {
 var pushTracksToArrayNoRepeats = (tracks) => {
       let result = [];
       return new Promise((resolve, reject) => {
-            console.log("function: pushTracksToArrayNoRepeats")
+            console.log("Entered pushTracksToArrayNoRepeats()");
             if(tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
@@ -337,9 +344,8 @@ var pushTracksToArrayNoRepeats = (tracks) => {
                               }
                         }
                   })
-                  console.log("TRACKSSSS:");
                   console.log(result);
-                   resolve(result);
+                  resolve(result);
             }
             else
                   reject("something wrong in 'pushTracksToArrayNoRepeats' function");

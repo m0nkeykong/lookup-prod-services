@@ -129,7 +129,7 @@ router.put('/removeFavoriteTrack/:userid', (req, res) => {
       User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
+                  { "favoriteTracks": { $in: [req.body.trackid] } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
@@ -183,7 +183,7 @@ router.put('/removeTrackRecord/:userid', (req, res) => {
       User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
+                  { "trackRecords": { $in: [req.body.trackid] } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
