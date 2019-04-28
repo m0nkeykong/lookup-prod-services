@@ -49,7 +49,7 @@ router.get('/getTrackByTitle/:title', (req, res) => {
          trackId
 **/
 router.get('/getTrackDetailsById/:trackId', (req, res) => {
-      console.log("Enter route(GET): /getTrackById");
+      console.log("Enter route(GET): /getTrackDetailsById");
 
       Track.findOne({
             _id: req.params.trackId
@@ -89,7 +89,7 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   console.log(userDetails);
             }
 
-            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments);
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -284,7 +284,7 @@ var getUserDetailsOfEachComment = async (commentsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = []) => {
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = [], _userDetails = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
@@ -293,6 +293,7 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _c
             result.endPoint = _endPoint;  
             result.wayPoints = _wayPoints;
             result.comments = _comments;
+            result.userDetails = _userDetails;
             resolve(result);
       })
 }
