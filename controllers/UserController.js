@@ -4,27 +4,10 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
       settings = require('../config'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'), 
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'), 
       bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
-
-
-/** 
-    values required:
-        name, email, birthDay, profilePicture
-    values can be null:
-        password, phone, accessibility, favoriteTracks, trackRecords
-**/
-router.post('/insertUser', (req, res) => {
-      console.log("Enter route(POST): /insertTrack");
-      const newUser = new User(req.body);
-      newUser.save((err, track) => {
-            if (err) res.status(500).send(err);
-            else if (track) res.status(200).send(track);
-            else res.status(500).send("Error create user");
-      });
-});
 
 // Return all the users in the database
 router.get('/getAllAccounts', (req, res) => {
@@ -52,32 +35,39 @@ router.get('/getAccountDetails/:userid', (req, res) => {
 });
 
 // Login with existing user or new user
-router.get('/getAccountDetailsByEmail/:email', (req, res) => {
+router.post('/getAccountDetailsByEmail/:email', (req, res) => {
       // Find existing user by email
-      User.findOne({ email: { email: { $eq: req.params.email } } }, (err, user) => {
+      console.log("hello");
+      var userDetails;
+      User.findOne({ email: req.params.email }, (err, user) => {
             // User is not existing in data base
-            if (err) {
+            if (!user) {
                   // Create new user with REQUIRED Parameters
-                  if (req.params.email && req.body.name && req.body.birthDay && req.body.profilePicture) {
-                        let userDetails = {
+                  if (req.params.email && req.body.name && req.body.imageUrl) {
+                        userDetails = {
                               email: req.params.email,
                               name: req.body.name,
-                              birthDay: req.body.birthDay,
-                              profilePicture: req.body.profilePicture,
+                              profilePicture: req.body.imageUrl,
+                              createdDate: new Date().getTime()
                         }
+                        console.log(userDetails);
                         // Create the document
-                        User.Create(userDetails, (err, user) => {
+                        User.create(userDetails, (err, newUser) => {
                               if (err) return res.status(500).send(err);
-                              if (!user) return res.status(404).send({ "message": "No user found" });
+                              if (!newUser) return res.status(404).send({ "message": "No user found" });
                               // Return the new created user
-                              res.status(200).send(user);
+                              console.log("create");
+                              res.status(200).send(newUser);
                         })
                   }
                   // Cannot create new user
-                  return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" }, { userDetauls });
+                  else return res.status(500).send({ "message": "There was a problem creating the user, one of parameters not defined" });
             }
-            // Return the existing user    
-            res.status(200).send(user);
+            else{
+                  // Return the existing user   
+                  console.log("create2"); 
+                  return res.status(200).send(user);
+            }
       });
 });
 
@@ -116,10 +106,10 @@ router.delete('/deleteAccount/:userid', (req, res) => {
 // Add new favorite track to user tracks list
 router.put('/addFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
+                  { "favoriteTracks": { $elemMatch: { $in: [req.body.trackid] } } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
@@ -136,10 +126,10 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
 // Remove existing favorite track from user tracks list
 router.put('/removeFavoriteTrack/:userid', (req, res) => {
       // Check if track already existing in user favorite list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "favoriteTracks": { $elemMatch: { $in: req.body.trackid } } }
+                  { "favoriteTracks": { $in: [req.body.trackid] } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
@@ -167,18 +157,19 @@ router.get('/getFavoriteTracksList/:userid', (req, res) => {
 });
 
 // Add new track record to user track records list
-router.get('/addTrackRecord/:userid', (req, res) => {
+router.put('/addTrackRecord/:userid', (req, res) => {
       // Check if track already existing in user records list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
+                  // { "trackRecords": {$elemMatch: {$in: [req.body.trackid]}} }
+                  { "trackRecords": {$in: [req.body.trackid]} }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
-            if (user) return res.status(404).send({ "message": "Track already existing in records tracks list" });
+            if (user) return res.status(404).send({ "message": "Track already existing in records tracks list" + user});
             // Find user and update his trackRecords list
-            User.findByIdAndUpdate(req.params.id, { $push: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
+            User.findByIdAndUpdate(req.params.userid, { $push: { "trackRecords": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was added successfully to user: ${newuser.name} records list`);
                   res.status(200).send(newuser);
@@ -187,12 +178,12 @@ router.get('/addTrackRecord/:userid', (req, res) => {
 });
 
 // Remove track record
-router.get('/removeTrackRecord/:userid', (req, res) => {
+router.put('/removeTrackRecord/:userid', (req, res) => {
       // Check if track already existing in user records list
-      User.find({
+      User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "trackRecords": { $elemMatch: { $in: req.body.trackid } } }
+                  { "trackRecords": { $in: [req.body.trackid] } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
@@ -220,7 +211,7 @@ router.get('/getTrackRecordsList/:userid', (req, res) => {
 });
 
 // Connect to BLE
-router.put('/linkBLE/:useridid', (req, res) => {
+router.put('/linkBLE/:userid', (req, res) => {
       User.findByIdAndUpdate(req.params.id, { BLE: req.body.bleid }, { new: true }, (err, newuser) => {
             if (err) return res.status(400).send(err);
             console.log(`BLE ${req.body.bleid} was linked successfully to user: ${newuser.name}`);
@@ -249,5 +240,7 @@ router.get('/getBLEStatus/:userid', (req, res) => {
       });
 });
 
+// checkCurrentLocationWithStartPoint
+// Add Promises to all "UPDATE" functions
 
 module.exports = router;

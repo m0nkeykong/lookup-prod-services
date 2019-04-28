@@ -33,6 +33,7 @@ app.use('/comments', CommentsController);
 
 app.all('*', (req, res, next) => {
     res.status(404).send({ "Message": `This page was not found` });
+    next();
 });
 
 // app.post('/login', userController.insertUser);
