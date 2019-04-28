@@ -111,6 +111,8 @@ router.get('/getAllTracks', (req, res) => {
 
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
+      console.log("Enter route(PUT): /updateTrack");
+
       // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
             if (err) return res.status(500).send(err);
@@ -119,6 +121,23 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
             });
             // console.log(`User: ${docs.title} updated successfully`);
             res.status(200).send(docs);
+      });
+});
+
+// find track by id and push comment to comments array
+/**
+ * values required:
+ *    trackId, commentId
+ */
+router.post('/addCommentToTrack', (req, res) => {
+      console.log("Enter route(PUT): /addCommentToTrack");
+
+      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"comments": req.body.commentId}}, (err,track)=>{
+            if (err) return res.status(500).send(err);
+            if (!track) return res.status(404).send({
+                  "Message": `Track ID was not found in the system`
+            });
+            res.status(200).send(track);
       });
 });
 
@@ -292,6 +311,7 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _c
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
             result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
             result.comments = _comments;
             result.userDetails = _userDetails;
             resolve(result);
