@@ -95,17 +95,122 @@ router.get('/getTrackById/:trackId', async (req, res) => {
         
 });
 
-router.get('/getAllTracks', (req, res) => {
+// router.get('/getAllTracks', (req, res) => {
+//       console.log("Enter route(GET): /getAllTracks");
+
+//       Track.find({}, (err, tracks) => {
+//             if (err) res.status(500).send(err);
+//             else if (tracks) res.status(200).send(tracks);
+//             else res.status(500).send("Error find tracks");
+//       });
+// });
+
+
+async function asyncForEach(array, callback) {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
+
+router.get('/getAllTracks', async (req, res) => {
       console.log("Enter route(GET): /getAllTracks");
 
-      Track.find({}, (err, tracks) => {
-            if (err) res.status(500).send(err);
-            else if (tracks) res.status(200).send(tracks);
-            else res.status(500).send("Error find tracks");
-      });
+      try{
+            let wayPoints, result = [];
+            let tracks = await getAllTracks();
+
+            await asyncForEach(tracks, async (track) => {
+                  let startPoint = await getPoint(track.startPoint);
+                  let endPoint = await getPoint(track.endPoint); 
+
+                  if( (track.wayPoints.length !== 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
+                  console.log("MIDDLEEEEE:");
+                  console.log(wayPoints);
+                  }
+
+                  result.push(await prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+                  console.log(startPoint);
+                });
+                console.log('Done');
+
+
+
+            return res.status(200).send(result); 
+
+            // let wayPoints;
+            
+            // if( (track.wayPoints.length !== 0) ) {
+            //       wayPoints = await getPoints(track.wayPoints); 
+            //       console.log("MIDDLEEEEE:");
+            //       console.log(wayPoints);
+            // }
+
+            // if( (track.comments.length !== 0) ) {
+            //       comments = await getComments(track.comments); 
+            //       console.log("comments:");
+            //       console.log(comments);
+            //       userDetails = await getUserDetailsOfEachComment(comments); 
+            //       console.log("userDetails:");
+            //       console.log(userDetails);
+            // }
+
+            // let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
+            // return res.status(200).send(result); 
+      } catch(e){
+            res.status(400).send(e.message);
+      }
+
+
+
+      // Track.find({}, (err, tracks) => {
+      //       if (err) res.status(500).send(err);
+
+
+      //       let wayPoints = [], result = [];
+      //       let startPoint, endPoint;
+
+      //       tracks.forEach(track => {
+      //             if( (track.wayPoints.length !== 0) ) {
+      //                   wayPoints = getPoints(track.wayPoints); 
+      //                   console.log("MIDDLEEEEE:");
+      //                   console.log(wayPoints);
+      //             }
+      //             startPoint = Points.findById({_id:track.startPoint});
+      //             endPoint = Points.findById({_id:track.endPoint});
+
+      //             console.log("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+      //             // console.log("START");
+      //             // console.log(startPoint);
+      //             // console.log("END");
+      //             // console.log(endPoint);
+      //             // console.log("MIDDLE");
+      //             // console.log(wayPoints);
+      //             result.push(prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+
+      //       });
+      //       console.log(result);
+      //       res.status(200).send(result);
+      // });
 });
 
 
+var getAllTracks = async () => {
+      return Track.find({});
+}
+
+var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
+      return new Promise((resolve, reject) => {
+            console.log("function: prepareResponseAllTracks");
+            result = new Object()
+            result.track = _track;
+            result.startPoint = _startPoint;  
+            result.endPoint = _endPoint;  
+            result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
+            resolve(result);
+      })
+}
 
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
