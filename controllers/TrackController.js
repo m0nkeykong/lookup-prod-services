@@ -12,9 +12,9 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
-        type, title, startPoint-id, endPoint-id
+        type, title, startPoint-id, endPoint-id, description
     values can be null:
-        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comments, estimatedDuration, changesDuringTrack, rating, diffucultyLevel, changesDuringTrack, actualDuration
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
