@@ -16,19 +16,50 @@ function isUnique(_title) {
 
 var TrackSchema = new mongoose.Schema({
       id: mongoose.Schema.Types.ObjectId,
-      startPoint: {type: mongoose.Schema.Types.ObjectId, ref: "PointSchema", required: true},
-      endPoint: {type: mongoose.Schema.Types.ObjectId, ref: "PointSchema", required: true},
-      wayPoints: [{type: mongoose.Schema.Types.ObjectId, ref: "PointSchema"}],
-      comments: [{type: mongoose.Schema.Types.ObjectId, ref: "CommentsSchema"}],
-      travelMode: {type: String, required: true},
-      description: {type: String, required: true},
-      title: {type: String, required: true, unique: true}, // validate: isUnique
-      estimatedDuration: {type: Number},
-      actualDuration: {type: Number},
-      distance: {type: Number},
-      rating: {type: Number},
-      changesDuringTrack: {type: Boolean},
-      difficultyLevel: {type: Number}
+      startPoint: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "PointSchema",
+            required: true
+      },
+      endPoint: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "PointSchema",
+            required: true
+      },
+      wayPoints: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "PointSchema"
+      }],
+      comments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "CommentsSchema"
+      }],
+      type: {
+            type: String,
+            required: true
+      },
+      description: {
+            type: String,
+            required: true
+      },
+      title: {
+            type: String,
+            required: true,
+            unique: true
+            // validate: isUnique
+      },
+      duration: Number,
+      rating: {
+            type: Number
+      },
+      changesDuringTrack: {
+            type: Boolean
+      },
+      // Change to fiffucultyLevel
+      diffucultyLevel: {
+            type: Number
+      }
 });
+
 
 module.exports = mongoose.model("TrackSchema", TrackSchema, "Tracks");

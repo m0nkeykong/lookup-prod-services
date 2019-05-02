@@ -12,9 +12,9 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
-        type, title, startPoint-id, endPoint-id, description
+        type, title, startPoint-id, endPoint-id
     values can be null:
-        wayPoints, comments, estimatedDuration, changesDuringTrack, rating, diffucultyLevel, changesDuringTrack, actualDuration
+        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -47,7 +47,7 @@ router.get('/getTrackByTitle/:title', (req, res) => {
          trackId
 **/
 router.get('/getTrackDetailsById/:trackId', (req, res) => {
-      console.log("Enter route(GET): /getTrackById");
+      console.log("Enter route(GET): /getTrackDetailsById");
 
       Track.findOne({
             _id: req.params.trackId
@@ -57,33 +57,6 @@ router.get('/getTrackDetailsById/:trackId', (req, res) => {
             else res.status(500).send("Error find track");
       });
 });
-
-// /** getTrackById
-//     values required:
-//          trackId
-// **/
-// router.get('/getTrackById/:trackId', async (req, res) => {
-//       console.log("Enter route(GET): /getTrackById");
-
-//       try{
-//             let id = req.params.trackId;
-//             let track = await getTrackById(id);
-//             let startPoint = await getPoint(track.startPoint);
-//             let endPoint = await getPoint(track.endPoint); 
-//             let wayPoints;
-            
-//             if( !(track.wayPoints.length == 0) ) {
-//                   wayPoints = await getPoints(track.wayPoints); 
-//                   console.log("MIDDLEEEEE:");
-//                   console.log(wayPoints);
-//             }
-//             let result = await prepareResponse(track,startPoint,endPoint,wayPoints);
-//             return res.status(200).send(result); 
-//       } catch(e){
-//             res.status(400).send(e.message);
-//       }
-        
-// });
 
 /** getTrackById
     values required:
@@ -109,9 +82,12 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   comments = await getComments(track.comments); 
                   console.log("comments:");
                   console.log(comments);
+                  userDetails = await getUserDetailsOfEachComment(comments); 
+                  console.log("userDetails:");
+                  console.log(userDetails);
             }
 
-            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments);
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -119,20 +95,127 @@ router.get('/getTrackById/:trackId', async (req, res) => {
         
 });
 
-router.get('/getAllTracks', (req, res) => {
+// router.get('/getAllTracks', (req, res) => {
+//       console.log("Enter route(GET): /getAllTracks");
+
+//       Track.find({}, (err, tracks) => {
+//             if (err) res.status(500).send(err);
+//             else if (tracks) res.status(200).send(tracks);
+//             else res.status(500).send("Error find tracks");
+//       });
+// });
+
+
+async function asyncForEach(array, callback) {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
+
+router.get('/getAllTracks', async (req, res) => {
       console.log("Enter route(GET): /getAllTracks");
 
-      Track.find({}, (err, tracks) => {
-            if (err) res.status(500).send(err);
-            else if (tracks) res.status(200).send(tracks);
-            else res.status(500).send("Error find tracks");
-      });
+      try{
+            let wayPoints, result = [];
+            let tracks = await getAllTracks();
+
+            await asyncForEach(tracks, async (track) => {
+                  let startPoint = await getPoint(track.startPoint);
+                  let endPoint = await getPoint(track.endPoint); 
+
+                  if( (track.wayPoints.length !== 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
+                  console.log("MIDDLEEEEE:");
+                  console.log(wayPoints);
+                  }
+
+                  result.push(await prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+                  console.log(startPoint);
+                });
+                console.log('Done');
+
+
+
+            return res.status(200).send(result); 
+
+            // let wayPoints;
+            
+            // if( (track.wayPoints.length !== 0) ) {
+            //       wayPoints = await getPoints(track.wayPoints); 
+            //       console.log("MIDDLEEEEE:");
+            //       console.log(wayPoints);
+            // }
+
+            // if( (track.comments.length !== 0) ) {
+            //       comments = await getComments(track.comments); 
+            //       console.log("comments:");
+            //       console.log(comments);
+            //       userDetails = await getUserDetailsOfEachComment(comments); 
+            //       console.log("userDetails:");
+            //       console.log(userDetails);
+            // }
+
+            // let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
+            // return res.status(200).send(result); 
+      } catch(e){
+            res.status(400).send(e.message);
+      }
+
+
+
+      // Track.find({}, (err, tracks) => {
+      //       if (err) res.status(500).send(err);
+
+
+      //       let wayPoints = [], result = [];
+      //       let startPoint, endPoint;
+
+      //       tracks.forEach(track => {
+      //             if( (track.wayPoints.length !== 0) ) {
+      //                   wayPoints = getPoints(track.wayPoints); 
+      //                   console.log("MIDDLEEEEE:");
+      //                   console.log(wayPoints);
+      //             }
+      //             startPoint = Points.findById({_id:track.startPoint});
+      //             endPoint = Points.findById({_id:track.endPoint});
+
+      //             console.log("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+      //             // console.log("START");
+      //             // console.log(startPoint);
+      //             // console.log("END");
+      //             // console.log(endPoint);
+      //             // console.log("MIDDLE");
+      //             // console.log(wayPoints);
+      //             result.push(prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+
+      //       });
+      //       console.log(result);
+      //       res.status(200).send(result);
+      // });
 });
 
 
+var getAllTracks = async () => {
+      return Track.find({});
+}
+
+var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
+      return new Promise((resolve, reject) => {
+            console.log("function: prepareResponseAllTracks");
+            result = new Object()
+            result.track = _track;
+            result.startPoint = _startPoint;  
+            result.endPoint = _endPoint;  
+            result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
+            resolve(result);
+      })
+}
 
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
+      console.log("Enter route(PUT): /updateTrack");
+
       // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
             if (err) return res.status(500).send(err);
@@ -141,6 +224,23 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
             });
             // console.log(`User: ${docs.title} updated successfully`);
             res.status(200).send(docs);
+      });
+});
+
+// find track by id and push comment to comments array
+/**
+ * values required:
+ *    trackId, commentId
+ */
+router.post('/addCommentToTrack', (req, res) => {
+      console.log("Enter route(PUT): /addCommentToTrack");
+
+      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"comments": req.body.commentId}}, (err,track)=>{
+            if (err) return res.status(500).send(err);
+            if (!track) return res.status(404).send({
+                  "Message": `Track ID was not found in the system`
+            });
+            res.status(200).send(track);
       });
 });
 
@@ -292,7 +392,6 @@ var getPoints = async (pointsId) => {
 
 var getComments = async (commentsId) => {
       console.log(`function: getComments => ${commentsId}`);
-      let results = [];
       let promises = [];
 
       commentsId.forEach( element => {
@@ -301,7 +400,17 @@ var getComments = async (commentsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = []) => {
+var getUserDetailsOfEachComment = async (commentsId) => {
+      console.log(`function: getUserDetailsOfEachComment => ${commentsId}`);
+      let promises = [];
+
+      commentsId.forEach( element => {
+            promises.push(User.findById({_id:element.userId}));
+      })
+      return Promise.all(promises);
+}
+
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = [], _userDetails = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
@@ -309,7 +418,9 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _c
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
             result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
             result.comments = _comments;
+            result.userDetails = _userDetails;
             resolve(result);
       })
 }
