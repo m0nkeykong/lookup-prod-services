@@ -1,19 +1,17 @@
 const express = require('express'),
       router = express.Router(),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
       PointSchema = require('../models/PointSchema');
 bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({
-      extended: true
-}));
+router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
         type, title, startPoint-id, endPoint-id
     values can be null:
-        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertPoint', (req, res) => {
       console.log("Enter route(POST): /insertPoint");

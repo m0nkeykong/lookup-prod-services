@@ -26,11 +26,19 @@ var TrackSchema = new mongoose.Schema({
             ref: "PointSchema",
             required: true
       },
-      middlePoint: [{
+      wayPoints: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "PointSchema"
       }],
+      comments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "CommentsSchema"
+      }],
       type: {
+            type: String,
+            required: true
+      },
+      description: {
             type: String,
             required: true
       },
@@ -40,16 +48,18 @@ var TrackSchema = new mongoose.Schema({
             unique: true
             // validate: isUnique
       },
-      comment: [String],
+      duration: Number,
       rating: {
             type: Number
       },
       changesDuringTrack: {
             type: Boolean
       },
+      // Change to fiffucultyLevel
       diffucultyLevel: {
             type: Number
       }
 });
+
 
 module.exports = mongoose.model("TrackSchema", TrackSchema, "Tracks");

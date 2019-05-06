@@ -3,19 +3,18 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
+      Comments = require('../models/CommentsSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({
-      extended: true
-}));
+router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
         type, title, startPoint-id, endPoint-id
     values can be null:
-        middlePoint, comment, rating, diffucultyLevel, changesDuringTrack
+        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -34,7 +33,9 @@ router.post('/insertTrack', (req, res) => {
 router.get('/getTrackByTitle/:title', (req, res) => {
       console.log("Enter route(GET): /getTrackByTitle");
 
-      Track.findOne({ title: req.params.title }, (err, track) => {
+      Track.findOne({
+            title: req.params.title
+      }, (err, track) => {
             if (err) res.status(500).send(err);
             else if (track) res.status(200).send(track);
             else res.status(500).send("Error find track");
@@ -46,9 +47,11 @@ router.get('/getTrackByTitle/:title', (req, res) => {
          trackId
 **/
 router.get('/getTrackDetailsById/:trackId', (req, res) => {
-      console.log("Enter route(GET): /getTrackById");
+      console.log("Enter route(GET): /getTrackDetailsById");
 
-      Track.findOne({ _id: req.params.trackId }, (err, track) => {
+      Track.findOne({
+            _id: req.params.trackId
+      }, (err, track) => {
             if (err) res.status(500).send(err);
             else if (track) res.status(200).send(track);
             else res.status(500).send("Error find track");
@@ -67,13 +70,24 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let track = await getTrackById(id);
             let startPoint = await getPoint(track.startPoint);
             let endPoint = await getPoint(track.endPoint); 
-            let middlePoint;
-            if( !(track.middlePoint.length == 0) ) {
-                  middlePoint = await getPoints(track.middlePoint); 
+            let wayPoints;
+            
+            if( (track.wayPoints.length !== 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
                   console.log("MIDDLEEEEE:");
-                  console.log(middlePoint);
+                  console.log(wayPoints);
             }
-            let result = await prepareResponse(track,startPoint,endPoint,middlePoint);
+
+            if( (track.comments.length !== 0) ) {
+                  comments = await getComments(track.comments); 
+                  console.log("comments:");
+                  console.log(comments);
+                  userDetails = await getUserDetailsOfEachComment(comments); 
+                  console.log("userDetails:");
+                  console.log(userDetails);
+            }
+
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -81,26 +95,152 @@ router.get('/getTrackById/:trackId', async (req, res) => {
         
 });
 
-router.get('/getAllTracks', (req, res) => {
+// router.get('/getAllTracks', (req, res) => {
+//       console.log("Enter route(GET): /getAllTracks");
+
+//       Track.find({}, (err, tracks) => {
+//             if (err) res.status(500).send(err);
+//             else if (tracks) res.status(200).send(tracks);
+//             else res.status(500).send("Error find tracks");
+//       });
+// });
+
+
+async function asyncForEach(array, callback) {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
+
+router.get('/getAllTracks', async (req, res) => {
       console.log("Enter route(GET): /getAllTracks");
 
-      Track.find({}, (err, tracks) => {
-            if (err) res.status(500).send(err);
-            else if (tracks) res.status(200).send(tracks);
-            else res.status(500).send("Error find tracks");
-      });
+      try{
+            let wayPoints, result = [];
+            let tracks = await getAllTracks();
+
+            await asyncForEach(tracks, async (track) => {
+                  let startPoint = await getPoint(track.startPoint);
+                  let endPoint = await getPoint(track.endPoint); 
+
+                  if( (track.wayPoints.length !== 0) ) {
+                  wayPoints = await getPoints(track.wayPoints); 
+                  console.log("MIDDLEEEEE:");
+                  console.log(wayPoints);
+                  }
+
+                  result.push(await prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+                  console.log(startPoint);
+                });
+                console.log('Done');
+
+
+
+            return res.status(200).send(result); 
+
+            // let wayPoints;
+            
+            // if( (track.wayPoints.length !== 0) ) {
+            //       wayPoints = await getPoints(track.wayPoints); 
+            //       console.log("MIDDLEEEEE:");
+            //       console.log(wayPoints);
+            // }
+
+            // if( (track.comments.length !== 0) ) {
+            //       comments = await getComments(track.comments); 
+            //       console.log("comments:");
+            //       console.log(comments);
+            //       userDetails = await getUserDetailsOfEachComment(comments); 
+            //       console.log("userDetails:");
+            //       console.log(userDetails);
+            // }
+
+            // let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
+            // return res.status(200).send(result); 
+      } catch(e){
+            res.status(400).send(e.message);
+      }
+
+
+
+      // Track.find({}, (err, tracks) => {
+      //       if (err) res.status(500).send(err);
+
+
+      //       let wayPoints = [], result = [];
+      //       let startPoint, endPoint;
+
+      //       tracks.forEach(track => {
+      //             if( (track.wayPoints.length !== 0) ) {
+      //                   wayPoints = getPoints(track.wayPoints); 
+      //                   console.log("MIDDLEEEEE:");
+      //                   console.log(wayPoints);
+      //             }
+      //             startPoint = Points.findById({_id:track.startPoint});
+      //             endPoint = Points.findById({_id:track.endPoint});
+
+      //             console.log("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+      //             // console.log("START");
+      //             // console.log(startPoint);
+      //             // console.log("END");
+      //             // console.log(endPoint);
+      //             // console.log("MIDDLE");
+      //             // console.log(wayPoints);
+      //             result.push(prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
+
+      //       });
+      //       console.log(result);
+      //       res.status(200).send(result);
+      // });
 });
 
 
+var getAllTracks = async () => {
+      return Track.find({});
+}
+
+var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
+      return new Promise((resolve, reject) => {
+            console.log("function: prepareResponseAllTracks");
+            result = new Object()
+            result.track = _track;
+            result.startPoint = _startPoint;  
+            result.endPoint = _endPoint;  
+            result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
+            resolve(result);
+      })
+}
 
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
+      console.log("Enter route(PUT): /updateTrack");
+
       // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
             if (err) return res.status(500).send(err);
-            if (!docs) return res.status(404).send({"Message": `Track ID was not found in the system`});
+            if (!docs) return res.status(404).send({
+                  "Message": `Track ID was not found in the system`
+            });
             // console.log(`User: ${docs.title} updated successfully`);
             res.status(200).send(docs);
+      });
+});
+
+// find track by id and push comment to comments array
+/**
+ * values required:
+ *    trackId, commentId
+ */
+router.post('/addCommentToTrack', (req, res) => {
+      console.log("Enter route(PUT): /addCommentToTrack");
+
+      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"comments": req.body.commentId}}, (err,track)=>{
+            if (err) return res.status(500).send(err);
+            if (!track) return res.status(404).send({
+                  "Message": `Track ID was not found in the system`
+            });
+            res.status(200).send(track);
       });
 });
 
@@ -112,24 +252,22 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 //from the same city and this track will be returned
 router.get('/getTracksByCity/:city', async (req, res) => {
       console.log("Enter route(GET): /getTracksByCity");
-
-      var result = [], pointsArr = [];
-      var points;
-      city = req.params.city;
+      var city = req.params.city;
 
       try{
             let points = await findPointsByCity(city);
-            let tracks = await findTracksByPoints(points);
-            let results = await pushTracksToArray(tracks);
+            let tracks = await findTracksByStartPoint(points);
+            let results = await pushTracksToArrayNoRepeats(tracks);
 
             res.status(200).send(results);
 
       } catch(e){
             console.log("there was error in 'getTracksByCity' function!");
             console.log(e);
-            res.status(500).send(e);
+            res.status(400).send(e);
       }
 });
+
 
 /** 
     values required:
@@ -140,10 +278,10 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
       console.log("Enter route(GET): /deleteTrack");
 
       try {
-            let trackId = req.params.trackId;
+            trackId = req.params.trackId;
             await deleteStartPoint(trackId);
             await deleteEndPoint(trackId);
-            await deleteMiddlePoint(trackId);
+            await deleteWayPoint(trackId);
             await deleteFavoriteTracksFromUsers(trackId);
             await deleteTrackRecordsFromUsers(trackId);
             await deleteSpecificTrack(trackId);
@@ -156,7 +294,81 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 });
 
+
+/** 
+    values required:
+         city
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCities");
+
+      try{
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let results = await pushTracksToArrayNoRepeats(tracksType);
+
+            // Check if we got track list or not
+            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(results);
+
+      } catch(e){
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
 /** ---------------------------- functions ---------------------------- */
+
+var findTracksPoints = async (startPoints, endPoints) => {
+      console.log("Entered findTracksPoints()");
+      return new Promise((resolve, reject) => {
+            var actions = Promise.all(startPoints.map(start => {
+                  return new Promise((resolve, reject) => {
+                        Track.find({ startPoint: start._id, endPoint: { $in: endPoints } }, (err, doc) => {
+                              if (doc) resolve(doc);
+                              if (err) reject(err);
+                              else resolve(null);
+                        })
+                  })
+            })
+            );
+            actions.then(data => {
+                  resolve(data);
+            })
+      });
+}
+
+var filterTracksByType = async (tracks, type) => {
+
+      let result = [];
+      return new Promise((resolve, reject) => {
+            console.log("Entered filterTracksByType()");
+            if(tracks){
+                  tracks.forEach( track => {
+                        if( !(track.length == 0) ){
+                              track.forEach(element => {
+                                    // track not empty
+                                    if(element.type == type) {
+                                          console.log(`TRACK TYPE: ${element.type}`);
+                                          // console.log(`push ${track} to result array in function: findTracksByPointId`);
+                                          result.push(element);
+                                    }
+                              })
+                        }
+                  })
+                  console.log(result);
+                  resolve(result);
+            }
+            else
+                  reject("something wrong in 'filterTracksByType' function");
+      })
+      
+}
+
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
@@ -170,7 +382,6 @@ var getPoint = async (pointId) => {
 
 var getPoints = async (pointsId) => {
       console.log(`function: getPoints => ${pointsId}`);
-      let results = [];
       let promises = [];
 
       pointsId.forEach( element => {
@@ -179,35 +390,61 @@ var getPoints = async (pointsId) => {
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _middlePoints = []) => {
+var getComments = async (commentsId) => {
+      console.log(`function: getComments => ${commentsId}`);
+      let promises = [];
+
+      commentsId.forEach( element => {
+            promises.push(Comments.findById({_id:element._id}));
+      })
+      return Promise.all(promises);
+}
+
+var getUserDetailsOfEachComment = async (commentsId) => {
+      console.log(`function: getUserDetailsOfEachComment => ${commentsId}`);
+      let promises = [];
+
+      commentsId.forEach( element => {
+            promises.push(User.findById({_id:element.userId}));
+      })
+      return Promise.all(promises);
+}
+
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = [], _userDetails = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
             result.track = _track;
             result.startPoint = _startPoint;  
             result.endPoint = _endPoint;  
-            result.middlePoints = _middlePoints;
+            result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
+            result.comments = _comments;
+            result.userDetails = _userDetails;
             resolve(result);
       })
 }
 
 var findPointsByCity = async (city) => {
-      return Points.find({city: city});
+      return new Promise((resolve, reject) => {
+            console.log("Entered findPointsByCity()");
+            resolve(Points.find({city: city}).distinct('_id'));
+      });
 }
 
-var findTracksByPoints = async (points) => {
+var findTracksByStartPoint = async (points) => {
       let promises = [];
       points.forEach( element => {
-            promises.push(Track.find({startPoint:element._id}));
+            promises.push(Track.find({startPoint: element._id}));
       })
 
       return Promise.all(promises);
 }
 
-var pushTracksToArray = (tracks) => {
+var pushTracksToArrayNoRepeats = (tracks) => {
       let result = [];
       return new Promise((resolve, reject) => {
-            console.log("function: pushTracksToArray")
+            console.log("Entered pushTracksToArrayNoRepeats()");
             if(tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
@@ -218,12 +455,11 @@ var pushTracksToArray = (tracks) => {
                               }
                         }
                   })
-                  console.log("TRACKSSSSSSSSSSSSSS:");
                   console.log(result);
-                   resolve(result);
+                  resolve(result);
             }
             else
-                  reject("something wrong in 'pushTracksToArray' function");
+                  reject("something wrong in 'pushTracksToArrayNoRepeats' function");
       })
        
 }
@@ -245,7 +481,9 @@ var deleteStartPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({ _id: trackId }, (err, res) => {
+            Track.findOne({
+                  _id: trackId
+            }, (err, res) => {
                   if (err) reject(err);
 
                   Points.findByIdAndRemove(res.startPoint._id, err => {
@@ -260,7 +498,9 @@ var deleteEndPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({ _id: trackId }, (err, res) => {
+            Track.findOne({
+                  _id: trackId
+            }, (err, res) => {
                   if (err) reject(err);
 
                   Points.findByIdAndRemove(res.startPoint._id, err => {
@@ -271,14 +511,16 @@ var deleteEndPoint = async (trackId) => {
       });
 }
 
-var deleteMiddlePoint = async (trackId) => {
+var deleteWayPoint = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteStartPoint");
 
-            Track.findOne({ _id: trackId }, (err, res) => {
+            Track.findOne({
+                  _id: trackId
+            }, (err, res) => {
                   if (err) reject(err);
 
-                  res.middlePoint.forEach((element) => {
+                  res.wayPoints.forEach((element) => {
                         Points.findByIdAndRemove(element, err => {
                               if (err) reject(err);
                         });
@@ -292,12 +534,22 @@ var deleteFavoriteTracksFromUsers = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteFavoriteTracksFromUsers");
 
-            User.find({ favoriteTracks: trackId }, (err, user) => {
+            User.find({
+                  favoriteTracks: trackId
+            }, (err, user) => {
                   if (err) reject(err);
                   user.forEach((usr) => {
-                        var cond = { _id: usr._id },
-                              update = {$pull: {favoriteTracks: trackId} },
-                              opts = { multi: true };
+                        var cond = {
+                                    _id: usr._id
+                              },
+                              update = {
+                                    $pull: {
+                                          favoriteTracks: trackId
+                                    }
+                              },
+                              opts = {
+                                    multi: true
+                              };
 
                         User.update(cond, update, opts, err => {
                               if (err) {
@@ -316,12 +568,22 @@ var deleteTrackRecordsFromUsers = async (trackId) => {
       return new Promise((resolve, reject) => {
             console.log("function: deleteTrackRecordsFromUsers");
 
-            User.find({ trackRecords: trackId }, (err, user) => {
+            User.find({
+                  trackRecords: trackId
+            }, (err, user) => {
                   if (err) reject(err);
                   user.forEach((usr) => {
-                        var cond = {_id: usr._id},
-                              update = {$pull: {trackRecords: trackId} },
-                              opts = {multi: true};
+                        var cond = {
+                                    _id: usr._id
+                              },
+                              update = {
+                                    $pull: {
+                                          trackRecords: trackId
+                                    }
+                              },
+                              opts = {
+                                    multi: true
+                              };
 
                         User.update(cond, update, opts, err => {
                               if (err) {
