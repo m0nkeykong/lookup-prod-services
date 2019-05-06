@@ -30,9 +30,9 @@ var TrackSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "PointSchema"
       }],
-      comments: [{
+      reports: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "CommentsSchema"
+            ref: "ReportsSchema"
       }],
       type: {
             type: String,

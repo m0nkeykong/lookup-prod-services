@@ -1,15 +1,15 @@
 var mongoose = require('mongoose');
 
-var CommentsSchema = new mongoose.Schema({
+var ReportsSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.ObjectId,
     userId: {
         type: String,
         required: true
     },
-    comment: {
+    report: {
         type: String,
         required: true
     }
 });
 
-module.exports = mongoose.model("CommentsSchema", CommentsSchema, "Comments");
+module.exports = mongoose.model("ReportsSchema", ReportsSchema, "Reports");
