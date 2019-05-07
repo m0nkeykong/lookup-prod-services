@@ -240,7 +240,6 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 });
 
-
 /** 
     values required:
          city
@@ -257,6 +256,41 @@ router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
             let tracksType = await filterTracksByType(tracks,req.params.type);
             let results = await pushTracksToArrayNoRepeats(tracksType);
 
+            // Check if we got track list or not
+            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(results);
+
+      } catch(e){
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
+/** 
+    values required:
+         from, to, type, diffLevel
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:from/:to/:type/:diffLevel', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
+
+      try{
+            // let startPoints = await findPointsByCity(req.params.from);
+            // let endPoints = await findPointsByCity(req.params.to);
+            // let tracks = await findTracksPoints(startPoints,endPoints);
+            // let tracksType = await filterTracksByType(tracks,req.params.type);
+            // let results = await pushTracksToArrayNoRepeats(tracksType);
+
+
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
+            let results = await pushTracksToArrayNoRepeats(tracksFinal);
+
+            console.log("~~~~~~~~~~~~~~~~~ E + N + D ~~~~~~~~~~~~~~~~~");
             // Check if we got track list or not
             if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
             else res.status(200).send(results);
@@ -288,6 +322,42 @@ var findTracksPoints = async (startPoints, endPoints) => {
       });
 }
 
+var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
+
+      let result = [];
+      return new Promise((resolve, reject) => {
+            console.log("Entered filterTracksByDiffLevel()");
+            if(tracks){
+                  console.log("TRACKKKKKKKSSSSSSSSSSSSSSS::::::");
+                  console.log(tracks);
+                  for (let i = 0; i < tracks.length ; ++i){
+                        if( !(tracks.length == 0) ){
+                              console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                              console.log(tracks[i].difficultyLevel );
+                              if(tracks[i].difficultyLevel == difficultyLevel) {
+                                    result.push(tracks[i]);
+                              }
+                        }
+                  }
+                  // tracks.forEach( track => {
+                  //       if( !(track.length == 0) ){
+                  //             track.forEach(element => {
+                  //                   // track not empty
+                  //                   if(element.difficultyLevel == difficultyLevel) {
+                  //                         console.log(`TRACK difficultyLevel: ${element.difficultyLevel}`);
+                  //                         result.push(element);
+                  //                   }
+                  //             })
+                  //       }
+                  // })
+                  console.log(result);
+                  resolve(result);
+            }
+            else
+                  reject("something wrong in 'filterTracksByDiffLevel' function");
+      })
+}
+
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
@@ -300,7 +370,6 @@ var filterTracksByType = async (tracks, type) => {
                                     // track not empty
                                     if(element.type == type) {
                                           console.log(`TRACK TYPE: ${element.type}`);
-                                          // console.log(`push ${track} to result array in function: findTracksByPointId`);
                                           result.push(element);
                                     }
                               })
@@ -312,9 +381,7 @@ var filterTracksByType = async (tracks, type) => {
             else
                   reject("something wrong in 'filterTracksByType' function");
       })
-      
 }
-
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
