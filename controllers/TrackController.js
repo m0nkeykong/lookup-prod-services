@@ -3,7 +3,7 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
-      Comments = require('../models/CommentsSchema'),
+      Reports = require('../models/ReportsSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
@@ -13,8 +13,6 @@ router.use(bodyParser.urlencoded({ extended: true }));
 /** 
     values required:
         type, title, startPoint-id, endPoint-id
-    values can be null:
-        wayPoints, comments, rating, diffucultyLevel, changesDuringTrack
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -78,16 +76,16 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   console.log(wayPoints);
             }
 
-            if( (track.comments.length !== 0) ) {
-                  comments = await getComments(track.comments); 
-                  console.log("comments:");
-                  console.log(comments);
-                  userDetails = await getUserDetailsOfEachComment(comments); 
+            if( (track.reports.length !== 0) ) {
+                  reports = await getReports(track.reports); 
+                  console.log("reports:");
+                  console.log(reports);
+                  userDetails = await getUserDetailsOfEachReport(reports); 
                   console.log("userDetails:");
                   console.log(userDetails);
             }
 
-            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
+            let result = await prepareResponse(track,startPoint,endPoint,wayPoints,reports,userDetails);
             return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
@@ -137,61 +135,9 @@ router.get('/getAllTracks', async (req, res) => {
 
 
             return res.status(200).send(result); 
-
-            // let wayPoints;
-            
-            // if( (track.wayPoints.length !== 0) ) {
-            //       wayPoints = await getPoints(track.wayPoints); 
-            //       console.log("MIDDLEEEEE:");
-            //       console.log(wayPoints);
-            // }
-
-            // if( (track.comments.length !== 0) ) {
-            //       comments = await getComments(track.comments); 
-            //       console.log("comments:");
-            //       console.log(comments);
-            //       userDetails = await getUserDetailsOfEachComment(comments); 
-            //       console.log("userDetails:");
-            //       console.log(userDetails);
-            // }
-
-            // let result = await prepareResponse(track,startPoint,endPoint,wayPoints,comments,userDetails);
-            // return res.status(200).send(result); 
       } catch(e){
             res.status(400).send(e.message);
       }
-
-
-
-      // Track.find({}, (err, tracks) => {
-      //       if (err) res.status(500).send(err);
-
-
-      //       let wayPoints = [], result = [];
-      //       let startPoint, endPoint;
-
-      //       tracks.forEach(track => {
-      //             if( (track.wayPoints.length !== 0) ) {
-      //                   wayPoints = getPoints(track.wayPoints); 
-      //                   console.log("MIDDLEEEEE:");
-      //                   console.log(wayPoints);
-      //             }
-      //             startPoint = Points.findById({_id:track.startPoint});
-      //             endPoint = Points.findById({_id:track.endPoint});
-
-      //             console.log("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
-      //             // console.log("START");
-      //             // console.log(startPoint);
-      //             // console.log("END");
-      //             // console.log(endPoint);
-      //             // console.log("MIDDLE");
-      //             // console.log(wayPoints);
-      //             result.push(prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
-
-      //       });
-      //       console.log(result);
-      //       res.status(200).send(result);
-      // });
 });
 
 
@@ -227,15 +173,15 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
       });
 });
 
-// find track by id and push comment to comments array
+// find track by id and push report to reports array
 /**
  * values required:
- *    trackId, commentId
+ *    trackId, reportId
  */
-router.post('/addCommentToTrack', (req, res) => {
-      console.log("Enter route(PUT): /addCommentToTrack");
+router.post('/addReportToTrack', (req, res) => {
+      console.log("Enter route(PUT): /addReportToTrack");
 
-      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"comments": req.body.commentId}}, (err,track)=>{
+      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"reports": req.body.reportId}}, (err,track)=>{
             if (err) return res.status(500).send(err);
             if (!track) return res.status(404).send({
                   "Message": `Track ID was not found in the system`
@@ -294,7 +240,6 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 });
 
-
 /** 
     values required:
          city
@@ -311,6 +256,41 @@ router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
             let tracksType = await filterTracksByType(tracks,req.params.type);
             let results = await pushTracksToArrayNoRepeats(tracksType);
 
+            // Check if we got track list or not
+            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(results);
+
+      } catch(e){
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
+/** 
+    values required:
+         from, to, type, diffLevel
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksByCity/:from/:to/:type/:diffLevel', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
+
+      try{
+            // let startPoints = await findPointsByCity(req.params.from);
+            // let endPoints = await findPointsByCity(req.params.to);
+            // let tracks = await findTracksPoints(startPoints,endPoints);
+            // let tracksType = await filterTracksByType(tracks,req.params.type);
+            // let results = await pushTracksToArrayNoRepeats(tracksType);
+
+
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
+            let results = await pushTracksToArrayNoRepeats(tracksFinal);
+
+            console.log("~~~~~~~~~~~~~~~~~ E + N + D ~~~~~~~~~~~~~~~~~");
             // Check if we got track list or not
             if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
             else res.status(200).send(results);
@@ -342,6 +322,42 @@ var findTracksPoints = async (startPoints, endPoints) => {
       });
 }
 
+var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
+
+      let result = [];
+      return new Promise((resolve, reject) => {
+            console.log("Entered filterTracksByDiffLevel()");
+            if(tracks){
+                  console.log("TRACKKKKKKKSSSSSSSSSSSSSSS::::::");
+                  console.log(tracks);
+                  for (let i = 0; i < tracks.length ; ++i){
+                        if( !(tracks.length == 0) ){
+                              console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                              console.log(tracks[i].difficultyLevel );
+                              if(tracks[i].difficultyLevel == difficultyLevel) {
+                                    result.push(tracks[i]);
+                              }
+                        }
+                  }
+                  // tracks.forEach( track => {
+                  //       if( !(track.length == 0) ){
+                  //             track.forEach(element => {
+                  //                   // track not empty
+                  //                   if(element.difficultyLevel == difficultyLevel) {
+                  //                         console.log(`TRACK difficultyLevel: ${element.difficultyLevel}`);
+                  //                         result.push(element);
+                  //                   }
+                  //             })
+                  //       }
+                  // })
+                  console.log(result);
+                  resolve(result);
+            }
+            else
+                  reject("something wrong in 'filterTracksByDiffLevel' function");
+      })
+}
+
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
@@ -354,7 +370,6 @@ var filterTracksByType = async (tracks, type) => {
                                     // track not empty
                                     if(element.type == type) {
                                           console.log(`TRACK TYPE: ${element.type}`);
-                                          // console.log(`push ${track} to result array in function: findTracksByPointId`);
                                           result.push(element);
                                     }
                               })
@@ -366,9 +381,7 @@ var filterTracksByType = async (tracks, type) => {
             else
                   reject("something wrong in 'filterTracksByType' function");
       })
-      
 }
-
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
@@ -390,27 +403,27 @@ var getPoints = async (pointsId) => {
       return Promise.all(promises);
 }
 
-var getComments = async (commentsId) => {
-      console.log(`function: getComments => ${commentsId}`);
+var getReports = async (reportsId) => {
+      console.log(`function: getReports => ${reportsId}`);
       let promises = [];
 
-      commentsId.forEach( element => {
-            promises.push(Comments.findById({_id:element._id}));
+      reportsId.forEach( element => {
+            promises.push(Reports.findById({_id:element._id}));
       })
       return Promise.all(promises);
 }
 
-var getUserDetailsOfEachComment = async (commentsId) => {
-      console.log(`function: getUserDetailsOfEachComment => ${commentsId}`);
+var getUserDetailsOfEachReport = async (reportsId) => {
+      console.log(`function: getUserDetailsOfEachReport => ${reportsId}`);
       let promises = [];
 
-      commentsId.forEach( element => {
+      reportsId.forEach( element => {
             promises.push(User.findById({_id:element.userId}));
       })
       return Promise.all(promises);
 }
 
-var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _comments = [], _userDetails = []) => {
+var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _reports = [], _userDetails = []) => {
       return new Promise((resolve, reject) => {
             console.log("function: prepareResponse");
             result = new Object()
@@ -419,7 +432,7 @@ var prepareResponse = async (_track, _startPoint, _endPoint, _wayPoints = [], _c
             result.endPoint = _endPoint;  
             result.wayPoints = _wayPoints;
             result.travelMode = _track.type;
-            result.comments = _comments;
+            result.reports = _reports;
             result.userDetails = _userDetails;
             resolve(result);
       })
