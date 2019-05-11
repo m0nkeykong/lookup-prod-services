@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
       Comments = require('../models/CommentsSchema'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
