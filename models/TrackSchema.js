@@ -39,12 +39,18 @@ var TrackSchema = new mongoose.Schema({
             type: Boolean
       },
       difficultyLevel: {
-            type: Number,
-            required: true,
-            min: 1,
-            max: 5
-      },
-      diffLevelCount: Number
+            star: {
+                  type: Number,
+                  required: true,
+                  min: 1,
+                  max: 5
+            },
+            countVotes: {
+                  type: Number,
+                  required: true,
+                  default: 0
+            }
+      }
 });
 
 

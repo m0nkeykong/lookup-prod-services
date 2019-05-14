@@ -158,11 +158,21 @@ var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints
       })
 }
 
+// router.put('/updateTrackStarsi/:trackId/:star', onlyNotEmpty, (req, res) => {
+//       console.log("Enter route(PUT): /updateTrackStars");
+
+//       Track.findOneAndUpdate({_id: req.params.trackId},
+//             {$set: {difficultyLevel:{star:req.params.star}}})
+//             .then((a) => {
+//                   if(!a) throw 'Can not update a';
+//                   res.status(200).send("updated"); 
+//               });
+// });
+
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
       console.log("Enter route(PUT): /updateTrack");
 
-      // Find and update user accounnt
       Track.findByIdAndUpdate(req.params.trackId, req.bodyNotEmpty, (err, docs) => {
             if (err) return res.status(500).send(err);
             if (!docs) return res.status(404).send({
@@ -171,6 +181,27 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
             // console.log(`User: ${docs.title} updated successfully`);
             res.status(200).send(docs);
       });
+});
+
+// Update Track by id
+router.put('/updateTrackStars/:trackId/:star', onlyNotEmpty, (req, res) => {
+      console.log("Enter route(PUT): /updateTrackStars");
+
+      Track.find({_id: req.params.trackId})
+      .then((track, err) => {
+  	      if(err) res.status(400).send(err);
+             if(track){
+                  track[0].difficultyLevel.star = req.params.star
+                  track[0].difficultyLevel.countVotes = track[0].difficultyLevel.countVotes + 1 
+                  track[0].save((err, track) => {
+                        if(err) res.status(400).send(err);
+                        res.status(200).send(track);
+                  })
+      }
+      })
+      .catch(err => {
+            console.log(err);
+      }) 
 });
 
 // find track by id and push report to reports array
