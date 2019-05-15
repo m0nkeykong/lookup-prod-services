@@ -50,7 +50,24 @@ var TrackSchema = new mongoose.Schema({
                   required: true,
                   default: 0
             }
+      },
+      disabledTime: {
+            actual: Number,
+            count: {
+                  type: Number,
+                  required: true,
+                  default: 0
+            }
+      },
+      nonDisabledTime: {
+            actual: Number,
+            count: {
+                  type: Number,
+                  required: true,
+                  default: 0
+            }
       }
+
 });
 
 
