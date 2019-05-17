@@ -383,12 +383,35 @@ router.get('/getTracksByCity/:from/:to/:type/:diffLevel', async (req, res) => {
       console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
 
       try{
-            // let startPoints = await findPointsByCity(req.params.from);
-            // let endPoints = await findPointsByCity(req.params.to);
-            // let tracks = await findTracksPoints(startPoints,endPoints);
-            // let tracksType = await filterTracksByType(tracks,req.params.type);
-            // let results = await pushTracksToArrayNoRepeats(tracksType);
 
+            let startPoints = await findPointsByCity(req.params.from);
+            let endPoints = await findPointsByCity(req.params.to);
+            let tracks = await findTracksPoints(startPoints,endPoints);
+            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
+            let results = await pushTracksToArrayNoRepeats(tracksFinal);
+
+            console.log("~~~~~~~~~~~~~~~~~ E + N + D ~~~~~~~~~~~~~~~~~");
+            // Check if we got track list or not
+            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(results);
+
+      } catch(e){
+            console.log(e);
+            res.status(400).send(e);
+      }
+});
+
+/** 
+    values required:
+         from, to, type, diffLevel
+**/
+// once there is one point at 'startPoint' or 'endPoint' 
+//from the same city and this track will be returned
+router.get('/getTracksFilter/:from/:to/:type/:diffLevel', async (req, res) => {
+      console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
+
+      try{
 
             let startPoints = await findPointsByCity(req.params.from);
             let endPoints = await findPointsByCity(req.params.to);
@@ -432,6 +455,7 @@ var findTracksPoints = async (startPoints, endPoints) => {
 var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
       let result = [];
+
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByDiffLevel()");
             if(tracks){
@@ -441,7 +465,10 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
                         if( !(tracks.length == 0) ){
                               console.log("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                               console.log(tracks[i].difficultyLevel );
-                              if(tracks[i].difficultyLevel == difficultyLevel) {
+                              let diffNumber = Math.round(tracks[i].difficultyLevel.star);
+                              console.log("Q:");
+                              console.log(diffNumber);
+                              if(diffNumber == difficultyLevel) {
                                     result.push(tracks[i]);
                               }
                         }
