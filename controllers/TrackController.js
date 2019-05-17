@@ -229,6 +229,57 @@ router.put('/updateDefficultyLevel/:trackId/:star', onlyNotEmpty, (req, res) => 
       }) 
 });
 
+
+// Update Track by id
+router.put('/updateTrackTime/:trackId/:isDisable/:time', onlyNotEmpty, (req, res) => {
+      console.log("Enter route(PUT): /updateTrackStars");
+
+      // TODO: continue when i know about time type of google.
+      if(req.params.isDisable){
+            // the user is disabled
+            Track.find({_id: req.params.trackId})
+            .then((track, err) => {
+                    if(err) res.status(400).send(err);
+                   if(track){
+                         var mult = track[0].difficultyLevel.star * track[0].difficultyLevel.countVotes;
+                         var plus = mult + parseInt(req.params.star);
+                         var votesPlusOne = track[0].difficultyLevel.countVotes + 1;
+                         var dividing = plus / votesPlusOne;
+                        track[0].difficultyLevel.star = dividing
+                        track[0].difficultyLevel.countVotes = track[0].difficultyLevel.countVotes + 1 
+                        track[0].save((err, track) => {
+                              if(err) res.status(400).send(err);
+                              res.status(200).send(track);
+                        })
+            }
+            })
+            .catch(err => {
+                  console.log(err);
+            }) 
+      } else {
+            // the user is not disabled
+            Track.find({_id: req.params.trackId})
+            .then((track, err) => {
+                    if(err) res.status(400).send(err);
+                   if(track){
+                         var mult = track[0].difficultyLevel.star * track[0].difficultyLevel.countVotes;
+                         var plus = mult + parseInt(req.params.star);
+                         var votesPlusOne = track[0].difficultyLevel.countVotes + 1;
+                         var dividing = plus / votesPlusOne;
+                        track[0].difficultyLevel.star = dividing
+                        track[0].difficultyLevel.countVotes = track[0].difficultyLevel.countVotes + 1 
+                        track[0].save((err, track) => {
+                              if(err) res.status(400).send(err);
+                              res.status(200).send(track);
+                        })
+            }
+            })
+            .catch(err => {
+                  console.log(err);
+            }) 
+      }
+});
+
 // find track by id and push report to reports array
 /**
  * values required:
