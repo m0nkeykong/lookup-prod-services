@@ -205,7 +205,7 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
 // });
 
 // Update Track by id
-router.put('/updateTrackStars/:trackId/:star', onlyNotEmpty, (req, res) => {
+router.put('/updateDefficultyLevel/:trackId/:star', onlyNotEmpty, (req, res) => {
       console.log("Enter route(PUT): /updateTrackStars");
 
       Track.find({_id: req.params.trackId})
