@@ -235,7 +235,7 @@ router.put('/updateTrackTime/:trackId/:isDisable/:time', onlyNotEmpty, (req, res
       console.log("Enter route(PUT): /updateTrackStars");
 
       // TODO: continue when i know about time type of google.
-      if(req.params.isDisable){
+      if(req.params.isDisable == "true"){
             // the user is disabled
             Track.find({_id: req.params.trackId})
             .then((track, err) => {
@@ -347,31 +347,31 @@ router.delete('/deleteTrack/:trackId', async (req, res) => {
 
 });
 
-/** 
-    values required:
-         city
-**/
-// once there is one point at 'startPoint' or 'endPoint' 
-//from the same city and this track will be returned
-router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
-      console.log("Enter route(GET): /getTracksByCities");
+// /** 
+//     values required:
+//          city
+// **/
+// // once there is one point at 'startPoint' or 'endPoint' 
+// //from the same city and this track will be returned
+// router.get('/getTracksByCity/:from/:to/:type', async (req, res) => {
+//       console.log("Enter route(GET): /getTracksByCities");
 
-      try{
-            let startPoints = await findPointsByCity(req.params.from);
-            let endPoints = await findPointsByCity(req.params.to);
-            let tracks = await findTracksPoints(startPoints,endPoints);
-            let tracksType = await filterTracksByType(tracks,req.params.type);
-            let results = await pushTracksToArrayNoRepeats(tracksType);
+//       try{
+//             let startPoints = await findPointsByCity(req.params.from);
+//             let endPoints = await findPointsByCity(req.params.to);
+//             let tracks = await findTracksPoints(startPoints,endPoints);
+//             let tracksType = await filterTracksByType(tracks,req.params.type);
+//             let results = await pushTracksToArrayNoRepeats(tracksType);
 
-            // Check if we got track list or not
-            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
-            else res.status(200).send(results);
+//             // Check if we got track list or not
+//             if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
+//             else res.status(200).send(results);
 
-      } catch(e){
-            console.log(e);
-            res.status(400).send(e);
-      }
-});
+//       } catch(e){
+//             console.log(e);
+//             res.status(400).send(e);
+//       }
+// });
 
 /** 
     values required:
@@ -408,7 +408,7 @@ router.get('/getTracksByCity/:from/:to/:type/:diffLevel', async (req, res) => {
 **/
 // once there is one point at 'startPoint' or 'endPoint' 
 //from the same city and this track will be returned
-router.get('/getTracksFilter/:from/:to/:type/:diffLevel', async (req, res) => {
+router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req, res) => {
       console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
 
       try{
@@ -418,12 +418,14 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel', async (req, res) => {
             let tracks = await findTracksPoints(startPoints,endPoints);
             let tracksType = await filterTracksByType(tracks,req.params.type);
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
-            let results = await pushTracksToArrayNoRepeats(tracksFinal);
+            let filterNoRepeat = await pushTracksToArrayNoRepeats(tracksFinal);
+            let TracksResults = await filterTrackByDisabled(req.params.isDisabled,filterNoRepeat);
+
 
             console.log("~~~~~~~~~~~~~~~~~ E + N + D ~~~~~~~~~~~~~~~~~");
             // Check if we got track list or not
-            if(results.length <= 0) res.status(404).send({ "message": "No tracks found" });
-            else res.status(200).send(results);
+            if(TracksResults.length <= 0) res.status(404).send({ "message": "No tracks found" });
+            else res.status(200).send(TracksResults);
 
       } catch(e){
             console.log(e);
@@ -432,6 +434,48 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel', async (req, res) => {
 });
 
 /** ---------------------------- functions ---------------------------- */
+
+var filterTrackByDisabled = async (isDisabled,tracks) => {
+      console.log("Entered filterTrackByDisabled()");
+      let result = [];
+
+      return new Promise((resolve, reject) => {
+            if(isDisabled == "true" && tracks){
+                  tracks.forEach( track => {
+                        if( !(track.length == 0) ){
+                              // track not empty
+                              console.log("TRASE:");
+                              console.log(track);
+                              // get the tracks whose difficulty level is below 3
+                              if(track.difficultyLevel.star <= 3) {
+                                    // console.log(`push ${track} to result array in function: findTracksByPointId`);
+                                    result.push(track);
+                              }
+                        }
+                  })
+                  console.log(result);
+                  resolve(result);
+            }
+            else
+                  resolve(tracks);
+
+            // if(tracks){
+            //       tracks.forEach( track => {
+            //             if( !(track.length == 0) ){
+            //                   // track not empty
+            //                   if(result.indexOf(track) === -1) {
+            //                         // console.log(`push ${track} to result array in function: findTracksByPointId`);
+            //                         result.push(track);
+            //                   }
+            //             }
+            //       })
+            //       console.log(result);
+            //       resolve(result);
+            // }
+            // else
+            //       reject("something wrong in 'pushTracksToArrayNoRepeats' function");
+      })
+}
 
 var findTracksPoints = async (startPoints, endPoints) => {
       console.log("Entered findTracksPoints()");
@@ -458,7 +502,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByDiffLevel()");
-            if(tracks){
+            if(difficultyLevel != '""' && tracks){
                   console.log("TRACKKKKKKKSSSSSSSSSSSSSSS::::::");
                   console.log(tracks);
                   for (let i = 0; i < tracks.length ; ++i){
@@ -488,7 +532,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
                   resolve(result);
             }
             else
-                  reject("something wrong in 'filterTracksByDiffLevel' function");
+                  resolve(tracks);
       })
 }
 
