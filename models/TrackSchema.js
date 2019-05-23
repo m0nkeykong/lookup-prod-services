@@ -52,7 +52,10 @@ var TrackSchema = new mongoose.Schema({
             }
       },
       disabledTime: {
-            actual: Number,
+            actual: {         // minutes
+                  type: Number,
+                  default: 0
+            },   
             count: {
                   type: Number,
                   required: true,
@@ -60,7 +63,10 @@ var TrackSchema = new mongoose.Schema({
             }
       },
       nonDisabledTime: {
-            actual: Number,
+            actual: {         // minutes
+                  type: Number,
+                  default: 0
+            },   
             count: {
                   type: Number,
                   required: true,
