@@ -1,6 +1,6 @@
 const express = require('express'),
       router = express.Router(),
-      onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty.js'),
       PointSchema = require('../models/PointSchema');
 bodyParser = require('body-parser');
 

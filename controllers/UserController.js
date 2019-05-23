@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       BLE = require('../models/BLESchema'),
       settings = require('../config'),
-      onlyNotEmpty = require('../controllers/OnlyNotEmpty'), 
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty.js'), 
       bodyParser = require('body-parser');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
