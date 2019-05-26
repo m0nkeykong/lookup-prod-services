@@ -438,7 +438,7 @@ router.get('/getTracksByCity/:from/:to/:type/:diffLevel', async (req, res) => {
 // once there is one point at 'startPoint' or 'endPoint' 
 //from the same city and this track will be returned
 router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req, res) => {
-      console.log("Enter route(GET): /getTracksByCity/:from/:to/:type/:diffLevel");
+      console.log("Enter route(GET): /getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled");
 
       try{
 
@@ -531,7 +531,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByDiffLevel()");
-            if(difficultyLevel != '""' && tracks){
+            if(difficultyLevel != "NO" && tracks){
                   console.log("TRACKKKKKKKSSSSSSSSSSSSSSS::::::");
                   console.log(tracks);
                   for (let i = 0; i < tracks.length ; ++i){
