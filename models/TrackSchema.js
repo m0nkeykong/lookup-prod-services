@@ -22,13 +22,13 @@ var TrackSchema = new mongoose.Schema({
       reports: [{type: mongoose.Schema.Types.ObjectId, ref: "RepoersSchema"}],
       travelMode: {type: String, required: true},
       description: {type: String, required: true},
-      title: {type: String, required: true, unique: true}, // validate: isUnique
-      estimatedDuration: {type: Number},
-      actualDuration: {type: Number},
+      title: {type: String, required: true, unique: true}, 
       distance: {type: Number},
       rating: {type: Number},
       changesDuringTrack: {type: Boolean},
-      difficultyLevel: {type: Number}
+      disabledTime: {actual: Number, count: {type: Number, required: true, default: 0}},
+      nonDisabledTime: {actual: Number, count: {type: Number, required: true, default: 0}},
+      difficultyLevel: {star: {type: Number, required: true, min: 1, max: 5}, countVotes: {type: Number, required: true, default: 0}}
 });
 
 module.exports = mongoose.model("TrackSchema", TrackSchema, "Tracks");
