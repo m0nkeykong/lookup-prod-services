@@ -9,8 +9,8 @@ var UserSchema = new mongoose.Schema({
     createdDate: {type: Date, default: null},
     password: {type: String},
     phone: {type: Number},  
-    accessibility: {type: Number, default: null},                                       // 0 - Normal | 1 - Blind | 2 - Deaf
-    rank: {level: {type: String, default: null}, code: {type: Number, default: null}},  // 0 - Baby, 1 - Tyro, 2 - Warrior, 3 - Knight, 4 - Royalty
+    accessibility: {type: Number, default: 1},                                       // 0 - Normal | 1 - Blind | 2 - Deaf
+    rank: {type: Number},
     favoriteTracks: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema", default: null}],
     trackRecords: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema", default: null}],
     BLE: {type: mongoose.Schema.Types.ObjectId, ref: "BLESchema", default: null}
