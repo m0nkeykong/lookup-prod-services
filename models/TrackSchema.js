@@ -24,7 +24,6 @@ var TrackSchema = new mongoose.Schema({
       description: {type: String, required: true},
       title: {type: String, required: true, unique: true}, 
       distance: {type: Number},
-      rating: {type: Number},
       changesDuringTrack: {type: Boolean},
       disabledTime: {actual: Number, count: {type: Number, required: true, default: 0}},
       nonDisabledTime: {actual: Number, count: {type: Number, required: true, default: 0}},
