@@ -34,7 +34,7 @@ var TrackSchema = new mongoose.Schema({
             required: true,
             unique: true
       },
-      duration: Number,
+      distance: Number,
       changesDuringTrack: {
             type: Boolean
       },
