@@ -469,7 +469,7 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
       let result = [];
 
       return new Promise((resolve, reject) => {
-            if(isDisabled == "true" && tracks){
+            if(isDisabled == '1' && tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               // track not empty
@@ -557,6 +557,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
                   //             })
                   //       }
                   // })
+                  console.log("RESULTS OF filterTracksByDiffLevel:");
                   console.log(result);
                   resolve(result);
             }
@@ -574,6 +575,7 @@ var filterTracksByType = async (tracks, type) => {
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               track.forEach(element => {
+                                    console.log(element);
                                     // track not empty
                                     if(element.type == type) {
                                           console.log(`TRACK TYPE: ${element.type}`);

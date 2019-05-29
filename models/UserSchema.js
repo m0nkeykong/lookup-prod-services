@@ -9,7 +9,7 @@ var UserSchema = new mongoose.Schema({
     createdDate: {type: Date, default: null},
     password: {type: String},
     phone: {type: Number},  
-    accessibility: {type: Number, default: 1},                                       // 0 - Normal | 1 - Blind | 2 - Deaf
+    accessibility: {type: Number, default: 0},  // 0 - Normal | 1 - disable
     rank: {type: Number},
     favoriteTracks: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema", default: null}],
     trackRecords: [{type: mongoose.Schema.Types.ObjectId, ref: "TrackSchema", default: null}],
