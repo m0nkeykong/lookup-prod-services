@@ -16,6 +16,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
+      console.log(req.body);
       const newTrack = new Track(req.body);
       newTrack.save((err, track) => {
             if (err) res.status(500).send(err);

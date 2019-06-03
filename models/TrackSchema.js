@@ -20,12 +20,12 @@ var TrackSchema = new mongoose.Schema({
       endPoint: {type: mongoose.Schema.Types.ObjectId, ref: "PointSchema", required: true},
       wayPoints: [{type: mongoose.Schema.Types.ObjectId, ref: "PointSchema"}],
       reports: [{type: mongoose.Schema.Types.ObjectId, ref: "RepoersSchema"}],
-      type: {type: String, required: true},
+      travelMode: {type: String, required: true},
       description: {type: String, required: true},
       title: {type: String, required: true, unique: true}, 
-      distance: {type: Number},
+      distance: {type: Number, default: null},
       changesDuringTrack: {type: Boolean},
-      difficultyLevel: {star: {type: Number, required: true, min: 1, max: 5}, countVotes: {type: Number, required: true, default: 0}},
+      difficultyLevel: {star: {type: Number, min: 1, max: 5}, countVotes: {type: Number, required: true, default: 0}},
       // Minutes
       disabledTime: {actual: {type: Number, default: 0}, count: {type: Number, required: true, default: 0}},
       nonDisabledTime: {actual: {type: Number, default: 0}, count: {type: Number, required: true, default: 0}}
