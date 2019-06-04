@@ -1,7 +1,6 @@
 const   express = require('express'),
         router = express.Router(),
-        onlyNotEmpty = require('./OnlyNotEmpty'),
-        CommentSchema = require('../models/CommentsSchema');
+        ReportsSchema = require('../models/ReportsSchema');
         bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
