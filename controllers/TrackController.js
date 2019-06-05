@@ -575,7 +575,6 @@ var filterTracksByType = async (tracks, type) => {
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               track.forEach(element => {
-                                    console.log(element);
                                     // track not empty
                                     if(element.type == type) {
                                           console.log(`TRACK TYPE: ${element.type}`);
