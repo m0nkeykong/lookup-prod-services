@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
       Reports = require('../models/ReportsSchema'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty.js'),
+      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
@@ -16,6 +16,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
+      console.log(req.body);
       const newTrack = new Track(req.body);
       newTrack.save((err, track) => {
             if (err) res.status(500).send(err);
