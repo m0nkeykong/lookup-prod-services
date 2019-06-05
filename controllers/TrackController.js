@@ -5,6 +5,7 @@ const express = require('express'),
       Points = require('../models/PointSchema'),
       Reports = require('../models/ReportsSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      _ = require('lodash'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
@@ -447,8 +448,14 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             let endPoints = await findPointsByCity(req.params.to);
             let tracks = await findTracksPoints(startPoints,endPoints);
             let tracksType = await filterTracksByType(tracks,req.params.type);
+            console.log("tracksType");
+            console.log(tracksType); 
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
+            console.log("tracksFinal");
+            console.log(tracksFinal); 
             let filterNoRepeat = await pushTracksToArrayNoRepeats(tracksFinal);
+            console.log("filterNoRepeat");
+            console.log(filterNoRepeat); 
             let TracksResults = await filterTrackByDisabled(req.params.isDisabled,filterNoRepeat);
 
 
@@ -570,21 +577,46 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
+      tracks = JSON.parse(JSON.stringify(tracks));
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByType()");
+            console.log(type.toUpperCase());
+            // console.log(type.toUpperCase());
             if(tracks){
-                  tracks.forEach( track => {
-                        if( !(track.length == 0) ){
-                              track.forEach(element => {
-                                    // track not empty
-                                    if(element.type == type) {
-                                          console.log(`TRACK TYPE: ${element.type}`);
-                                          result.push(element);
-                                    }
-                              })
-                        }
-                  })
-                  console.log(result);
+                 try {
+                        tracks = _.filter(tracks, (track) => {
+                              return track.length;
+                        })
+                        tracks = tracks[0];
+                        result = _.filter(tracks, (track) => {
+                              console.log(`------IM AM HEREEREREE:------`)
+                              console.log(track.title)
+                              console.log(track.type)
+                              return track.type.toUpperCase() == type.toUpperCase();
+                        })
+                        
+                 } catch (err) {
+                       reject(err);
+                 }
+                  // _.map(tracks, (track) => {
+                  //       console.log(`TYPE: ${track['type']}`)
+                  // })
+                  // tracks.forEach( track => {
+                  //       if( !(track.length == 0) ){
+                  //             track.forEach(element => {
+                  //                   console.log("ELEMENT:");
+                  //                   console.log(element);
+                  //                   console.log("TYPE:");
+                  //                   console.log(element.type);
+                  //                   // track not empty
+                  //                   if(element.type == type.toUpperCase()) {
+                  //                         console.log(`TRACK TYPE: ${element.type}`);
+                  //                         result.push(element);
+                  //                   }
+                  //             })
+                  //       }
+                  // })
+                  // console.log(result);
                   resolve(result);
             }
             else
