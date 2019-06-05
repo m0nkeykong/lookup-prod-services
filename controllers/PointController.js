@@ -9,7 +9,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 
 /** 
     values required:
-        type, title, startPoint-id, endPoint-id
+        country, city, lng, lat
 **/
 router.post('/insertPoint', (req, res) => {
       console.log("Enter route(POST): /insertPoint");
