@@ -445,8 +445,14 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
       try{
 
             let startPoints = await findPointsByCity(req.params.from);
+            console.log("startPoint");
+            console.log(startPoints);
             let endPoints = await findPointsByCity(req.params.to);
+            console.log("endPoints");
+            console.log(endPoints); 
             let tracks = await findTracksPoints(startPoints,endPoints);
+            console.log("tracks");
+            console.log(tracks); 
             let tracksType = await filterTracksByType(tracks,req.params.type);
             console.log("tracksType");
             console.log(tracksType); 
@@ -574,6 +580,37 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
       })
 }
 
+// var filterTracksByType = async (tracks, type) => {
+
+//       let result = [];
+//       return new Promise((resolve, reject) => {
+//             console.log("Entered filterTracksByType()");
+//             console.log(type);
+//             // console.log(type.toUpperCase());
+//             if(tracks){
+//                   tracks.forEach( track => {
+//                         if( !(track.length == 0) ){
+//                               track.forEach(element => {
+//                                     console.log("ELEMENT:");
+//                                     console.log(element);
+//                                     console.log("TYPE:");
+//                                     console.log(element.type);
+//                                     // track not empty
+//                                     if(element.type == type.toUpperCase()) {
+//                                           console.log(`TRACK TYPE: ${element.type}`);
+//                                           result.push(element);
+//                                     }
+//                               })
+//                         }
+//                   })
+//                   console.log(result);
+//                   resolve(result);
+//             }
+//             else
+//                   reject("something wrong in 'filterTracksByType' function");
+//       })
+// }
+
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
@@ -622,7 +659,7 @@ var filterTracksByType = async (tracks, type) => {
             else
                   reject("something wrong in 'filterTracksByType' function");
       })
-}
+  }
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
