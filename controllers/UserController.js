@@ -1,7 +1,9 @@
 const express = require('express'),
       router = express.Router(),
       User = require('../models/UserSchema'),
+      Point = require('../models/PointSchema'),
       Track = require('../models/TrackSchema'),
+      Report = require('../models/ReportsSchema'),
       BLE = require('../models/BLESchema'),
       settings = require('../config'),
       onlyNotEmpty = require('../controllers/OnlyNotEmpty'), 
@@ -22,10 +24,77 @@ router.get('/getAllAccounts', (req, res) => {
       });
 });
 
+
+
 // Get Specific user data by id
 router.get('/getAccountDetails/:userid', (req, res) => {
       console.log(`Entered getAccountDetails`);
-      User.findById(req.params.userid, (err, user) => {
+      User.findOne({ _id: req.params.userid }).
+      populate([
+            {
+                  path: 'trackRecords',
+                  model: Track,
+                  populate: {
+                        path: 'startPoint',
+                        model: Point
+                  }
+            }, {
+                  path: 'trackRecords',
+                  model: Track,
+                  populate: {
+                        path: 'endPoint',
+                        model: Point
+                  }
+            }, {
+                  path: 'trackRecords',
+                  model: Track,
+                  populate: {
+                        path: 'wayPoints',
+                        model: Point
+                  }
+            }, {
+                  path: 'trackRecords',
+                  model: Track,
+                  populate: {
+                        path: 'reports',
+                        model: Report
+                  }
+            },
+            {
+                  path: 'favoriteTracks',
+                  model: Track,
+                  populate: {
+                        path: 'startPoint',
+                        model: Point
+                  }
+            }, {
+                  path: 'favoriteTracks',
+                  model: Track,
+                  populate: {
+                        path: 'endPoint',
+                        model: Point
+                  }
+            }, {
+                  path: 'favoriteTracks',
+                  model: Track,
+                  populate: {
+                        path: 'wayPoints',
+                        model: Point
+                  }
+            }, {
+                  path: 'favoriteTracks',
+                  model: Track,
+                  populate: {
+                        path: 'reports',
+                        model: Report,
+                        populate: {
+                              path: 'userid',
+                              model: User,
+                        }
+                  }
+            }
+      ]). 
+      exec(function (err, user) {
             // Problem with user schema
             if (err) return res.status(500).send(err);
             // User not found
