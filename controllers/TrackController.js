@@ -445,23 +445,11 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
       try{
 
             let startPoints = await findPointsByCity(req.params.from);
-            console.log("startPoint");
-            console.log(startPoints);
             let endPoints = await findPointsByCity(req.params.to);
-            console.log("endPoints");
-            console.log(endPoints); 
             let tracks = await findTracksPoints(startPoints,endPoints);
-            console.log("tracks");
-            console.log(tracks); 
             let tracksType = await filterTracksByType(tracks,req.params.type);
-            console.log("tracksType");
-            console.log(tracksType); 
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
-            console.log("tracksFinal");
-            console.log(tracksFinal); 
             let filterNoRepeat = await pushTracksToArrayNoRepeats(tracksFinal);
-            console.log("filterNoRepeat");
-            console.log(filterNoRepeat); 
             let TracksResults = await filterTrackByDisabled(req.params.isDisabled,filterNoRepeat);
 
 
@@ -483,7 +471,7 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
       let result = [];
 
       return new Promise((resolve, reject) => {
-            if(isDisabled == '1' && tracks){
+            if(isDisabled == '2' && tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               // track not empty
