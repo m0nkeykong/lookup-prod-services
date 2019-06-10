@@ -4,7 +4,7 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
       Reports = require('../models/ReportsSchema'),
-      onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
       _ = require('lodash'),
       bodyParser = require('body-parser');
 
