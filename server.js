@@ -5,7 +5,7 @@ var express = require('express'),
     UserController = require('./controllers/UserController'),
     TrackController = require('./controllers/TrackController'),
     PointController = require('./controllers/PointController'),
-    ReportsController = require('./controllers/ReportsController'),
+    CommentsController = require('./controllers/CommentsController'),
     cors = require('cors'),
     port = process.env.PORT || 3000;
 
@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 app.use('/user', UserController);
 app.use('/track', TrackController);
 app.use('/point', PointController);
-app.use('/reports', ReportsController);
+app.use('/comments', CommentsController);
 
 app.all('*', (req, res, next) => {
     res.status(404).send({ "Message": `This page was not found` });
@@ -37,7 +37,6 @@ app.all('*', (req, res, next) => {
 });
 
 // app.post('/login', userController.insertUser);
-
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
