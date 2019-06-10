@@ -5,6 +5,7 @@ const express = require('express'),
       Points = require('../models/PointSchema'),
       Reports = require('../models/ReportsSchema'),
       onlyNotEmpty = require('../controllers/onlyNotEmpty'),
+      _ = require('lodash'),
       bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
@@ -470,7 +471,7 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
       let result = [];
 
       return new Promise((resolve, reject) => {
-            if(isDisabled == "true" && tracks){
+            if(isDisabled == '2' && tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
                               // track not empty
@@ -532,6 +533,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByDiffLevel()");
+            
             if(difficultyLevel != "NO" && tracks){
                   console.log("TRACKKKKKKKSSSSSSSSSSSSSSS::::::");
                   console.log(tracks);
@@ -558,6 +560,7 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
                   //             })
                   //       }
                   // })
+                  console.log("RESULTS OF filterTracksByDiffLevel:");
                   console.log(result);
                   resolve(result);
             }
@@ -566,30 +569,94 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
       })
 }
 
+// var filterTracksByType = async (tracks, type) => {
+
+//       let result = [];
+//       return new Promise((resolve, reject) => {
+//             console.log("Entered filterTracksByType()");
+//             console.log(type);
+//             // console.log(type.toUpperCase());
+//             if(tracks){
+//                   tracks.forEach( track => {
+//                         if( !(track.length == 0) ){
+//                               track.forEach(element => {
+//                                     console.log("ELEMENT:");
+//                                     console.log(element);
+//                                     console.log("TYPE:");
+//                                     console.log(element.type);
+//                                     // track not empty
+//                                     if(element.type == type.toUpperCase()) {
+//                                           console.log(`TRACK TYPE: ${element.type}`);
+//                                           result.push(element);
+//                                     }
+//                               })
+//                         }
+//                   })
+//                   console.log(result);
+//                   resolve(result);
+//             }
+//             else
+//                   reject("something wrong in 'filterTracksByType' function");
+//       })
+// }
+
 var filterTracksByType = async (tracks, type) => {
 
       let result = [];
+      tracks = JSON.parse(JSON.stringify(tracks));
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByType()");
+            console.log(type.toUpperCase());
+            // console.log(type.toUpperCase());
             if(tracks){
-                  tracks.forEach( track => {
-                        if( !(track.length == 0) ){
-                              track.forEach(element => {
-                                    // track not empty
-                                    if(element.type == type) {
-                                          console.log(`TRACK TYPE: ${element.type}`);
-                                          result.push(element);
-                                    }
-                              })
-                        }
-                  })
-                  console.log(result);
-                  resolve(result);
+                 try {
+                        tracks = _.filter(tracks, (track) => {
+                              return track.length;
+                        })
+                        tracks = tracks[0];
+                        result = _.filter(tracks, (track) => {
+                              console.log(`------IM AM HEREEREREE:------`)
+                              console.log(track.title)
+                              console.log(track.travelMode)
+                              if(track.travelMode)
+                                    return track.travelMode.toUpperCase() == type.toUpperCase();
+                        })
+                        
+                        console.log("HALLO HALLO HALLO HALLO HALLO HALLO");
+                        console.log(result);
+                        resolve(result);
+                        
+                 } catch (err) {
+                       reject(err);
+                 }
+                  // _.map(tracks, (track) => {
+                  //       console.log(`TYPE: ${track['type']}`)
+                  // })
+                  // tracks.forEach( track => {
+                  //       if( !(track.length == 0) ){
+                  //             track.forEach(element => {
+                  //                   console.log("ELEMENT:");
+                  //                   console.log(element);
+                  //                   console.log("TYPE:");
+                  //                   console.log(element.type);
+                  //                   // track not empty
+                  //                   if(element.type == type.toUpperCase()) {
+                  //                         console.log(`TRACK TYPE: ${element.type}`);
+                  //                         result.push(element);
+                  //                   }
+                  //             })
+                  //       }
+                  // })
+                  // console.log(result);
+
+                  // console.log("HALLO HALLO HALLO HALLO HALLO HALLO");
+                  // console.log(result);
+                  // resolve(result);
             }
             else
                   reject("something wrong in 'filterTracksByType' function");
       })
-}
+  }
 
 var getTrackById = async (trackId) => {
       console.log(`function: getTrackById => ${trackId}`);
@@ -666,6 +733,7 @@ var pushTracksToArrayNoRepeats = (tracks) => {
       let result = [];
       return new Promise((resolve, reject) => {
             console.log("Entered pushTracksToArrayNoRepeats()");
+           
             if(tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
