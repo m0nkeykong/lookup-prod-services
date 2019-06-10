@@ -70,6 +70,8 @@ router.get('/getTrackById/:trackId', async (req, res) => {
       try{
             let id = req.params.trackId;
             let track = await getTrackById(id);
+            console.log("track:");
+            console.log(track);
             let startPoint = await getPoint(track.startPoint);
             let endPoint = await getPoint(track.endPoint); 
             let wayPoints;
@@ -368,12 +370,12 @@ router.put('/updateTrackTime/:trackId/:isDisable/:minutes', onlyNotEmpty, (req, 
 // find track by id and push report to reports array
 /**
  * values required:
- *    trackId, commentId
+ *    trackId, reportId
  */
-router.post('/addCommentToTrack', (req, res) => {
-      console.log("Enter route(PUT): /addCommentToTrack");
+router.post('/addReportToTrack', (req, res) => {
+      console.log("Enter route(PUT): /addReportToTrack");
 
-      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"comments": req.body.commentId}}, (err,track)=>{
+      Track.findByIdAndUpdate({_id: req.body.trackId}, {$push: {"reports": req.body.reportId}}, (err,track)=>{
             if (err) return res.status(500).send(err);
             if (!track) return res.status(404).send({
                   "Message": `Track ID was not found in the system`
