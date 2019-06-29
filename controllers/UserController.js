@@ -5,7 +5,6 @@ const express = require('express'),
       Track = require('../models/TrackSchema'),
       Report = require('../models/ReportsSchema'),
       BLE = require('../models/BLESchema'),
-      settings = require('../config'),
       onlyNotEmpty = require('../controllers/OnlyNotEmpty'), 
       bodyParser = require('body-parser');
 router.use(bodyParser.json());
@@ -185,13 +184,13 @@ router.put('/addFavoriteTrack/:userid', (req, res) => {
       User.findOne({
             $and: [
                   { _id: req.params.userid },
-                  { "favoriteTracks": { $elemMatch: { $in: [req.body.trackid] } } }
+                  { "favoriteTracks": { $in: [req.body.trackid] } }
             ]
       }, (err, user) => {
             if (err) return res.status(500).send(err);
             if (user) return res.status(404).send({ "message": "Track already existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
-            User.findByIdAndUpdate(req.params.id, { $push: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
+            User.findByIdAndUpdate(req.params.userid, { $push: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was added successfully to user: ${newuser.name} favorite list`);
                   res.status(200).send(newuser);
@@ -212,7 +211,7 @@ router.put('/removeFavoriteTrack/:userid', (req, res) => {
             if (err) return res.status(500).send(err);
             if (!user) return res.status(404).send({ "message": "Track is not existing in favorite tracks list" });
             // Find user and update his favoriteTracks list
-            User.findByIdAndUpdate(req.params.id, { $pull: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
+            User.findByIdAndUpdate(req.params.userid, { $pull: { "favoriteTracks": req.body.trackid } }, { new: true }, (err, newuser) => {
                   if (err) return res.status(400).send(err);
                   console.log(`Track ${req.body.trackid} was removed successfully from user: ${newuser.name} favorite list`);
                   res.status(200).send(newuser);
@@ -232,6 +231,22 @@ router.get('/getFavoriteTracksList/:userid', (req, res) => {
             // Return the found user
             res.status(200).send(user.favoriteTracks);
       });
+});
+
+// Check if is favorite track existing
+router.get('/isFavorite/:userid/:trackid', (req, res) => {
+      console.log(`Entered isFavorite`);
+      console.log('trackid: ' + req.params.trackid);
+      User.findOne({
+            $and: [
+                  { _id: req.params.userid },
+                  { "favoriteTracks": { $in: req.params.trackid } }
+            ]
+      }, (err, user) => {
+            if (err) return res.status(404).send(err);
+            else if (user) return res.status(200).send({ isFavorite: true });
+            else if (!user) return res.status(200).send({ isFavorite: false });
+      })
 });
 
 // Add new track record to user track records list
