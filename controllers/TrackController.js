@@ -65,6 +65,7 @@ router.get('/getTrackDetailsById/:trackId', (req, res) => {
 router.get('/getTrackById/:trackId', async (req, res) => {
       console.log("Enter route(GET): /getTrackById");
 
+      let reports,userDetails = [];
       try{
             let id = req.params.trackId;
             let track = await getTrackById(id);
@@ -77,6 +78,10 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   console.log(wayPoints);
             }
 
+            // console.log("YYYYY:");
+            // console.log(track);
+            // console.log(track.reports);
+            // console.log(track.reports.length);
             if( (track.reports.length !== 0) ) {
                   reports = await getReports(track.reports); 
                   console.log(reports);
