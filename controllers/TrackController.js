@@ -340,8 +340,14 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             let startPoints = await findPointsByCity(req.params.from);
             let endPoints = await findPointsByCity(req.params.to);
             let tracks = await findTracksPoints(startPoints,endPoints);
+            console.log("TRACKSSSSSSSSSSSSSSSSSSSS");
+            console.log(tracks);
             let tracksType = await filterTracksByType(tracks,req.params.type);
+            console.log("TRACKS TYPE");
+            console.log(tracksType);
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
+            console.log("TRACKS FINAL");
+            console.log(tracksFinal);
             let filterNoRepeat = await pushTracksToArrayNoRepeats(tracksFinal);
             let TracksResults = await filterTrackByDisabled(req.params.isDisabled,filterNoRepeat);
 
@@ -428,21 +434,27 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
 var filterTracksByType = async (tracks, type) => {
 
+      console.log("TYPEEEEE:");
+      console.log(type);
       let result = [];
       tracks = JSON.parse(JSON.stringify(tracks));
       return new Promise((resolve, reject) => {
             console.log("Entered filterTracksByType()");
             if(tracks){
                  try {
-                        tracks = _.filter(tracks, (track) => {
+                        result = _.filter(tracks, (track) => {
                               return track.length;
                         })
-                        tracks = tracks[0];
-                        result = _.filter(tracks, (track) => {
-                              if(track.travelMode)
-                                    return track.travelMode.toUpperCase() == type.toUpperCase();
-                        })
+                        // tracks = tracks[0];
+                        console.log("GGGGGGGG");
+                        console.log(tracks);
+                        // result = _.filter(tracks, (track) => {
+                        //       if(track.travelMode)
+                        //             return track.travelMode.toUpperCase() == type.toUpperCase();
+                        // })
                         
+                        console.log("RESULT:");
+                        // console.log(result);
                         console.log(result);
                         resolve(result);
                         
