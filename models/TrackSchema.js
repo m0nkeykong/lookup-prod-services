@@ -19,7 +19,7 @@ var TrackSchema = new mongoose.Schema({
       startPoint: {type: mongoose.Schema.Types.ObjectId, ref: "PointSchema", required: true},
       endPoint: {type: mongoose.Schema.Types.ObjectId, ref: "PointSchema", required: true},
       wayPoints: [{location: { type: String, required: true }, stopover: { type: Boolean, required: true }}],
-      reports: [{ type: mongoose.Schema.Types.ObjectId, ref: "ReportsSchema"}],
+      reports: [{ type: mongoose.Schema.Types.ObjectId, ref: "ReportSchema"}],
       travelMode: {type: String, required: true},
       description: {type: String, required: true},
       title: {type: String, required: true, unique: true}, 

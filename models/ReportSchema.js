@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-var ReportsSchema = new mongoose.Schema({
+var ReportSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.ObjectId,
     userId: {
         type: String,
@@ -12,4 +12,4 @@ var ReportsSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("ReportsSchema", ReportsSchema, "Reports");
+module.exports = mongoose.model("ReportSchema", ReportSchema, "ReportSchema");

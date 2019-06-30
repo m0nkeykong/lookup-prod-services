@@ -3,7 +3,7 @@ const express = require('express'),
       User = require('../models/UserSchema'),
       Track = require('../models/TrackSchema'),
       Points = require('../models/PointSchema'),
-      Reports = require('../models/ReportsSchema'),
+      Reports = require('../models/ReportSchema'),
       onlyNotEmpty = require('../controllers/OnlyNotEmpty'),
       _ = require('lodash'),
       bodyParser = require('body-parser');
@@ -14,6 +14,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 /** 
     values required:
         type, title, startPoint-id, endPoint-id
+
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
@@ -64,7 +65,7 @@ router.get('/getTrackDetailsById/:trackId', (req, res) => {
 **/
 router.get('/getTrackById/:trackId', async (req, res) => {
       console.log("Enter route(GET): /getTrackById");
-
+      let reports, userDetails = [];
       try{
             let id = req.params.trackId;
             let track = await getTrackById(id);
@@ -77,12 +78,13 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   console.log(wayPoints);
             }
 
-            if( (track.reports.length !== 0) ) {
+            if( track.reports.length > 0 ) {
                   reports = await getReports(track.reports); 
                   console.log(reports);
                   userDetails = await getUserDetailsOfEachReport(reports); 
                   console.log(userDetails);
             }
+
 
             let result = await prepareResponse(track,startPoint,endPoint,reports,userDetails);
             return res.status(200).send(result); 
