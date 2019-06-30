@@ -12,4 +12,4 @@ var ReportSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("ReportSchema", ReportSchema, "ReportSchema");
+module.exports = mongoose.model("ReportSchema", ReportSchema, "Reports");

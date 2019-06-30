@@ -78,8 +78,13 @@ router.get('/getTrackById/:trackId', async (req, res) => {
                   console.log(wayPoints);
             }
 
+            console.log("REPOOOOOOOOOOO 55");
+            console.log(track);
+            console.log(track.reports);
+            console.log(track.reports.length);
             if( track.reports.length > 0 ) {
                   reports = await getReports(track.reports); 
+                  console.log("result of getReports:");
                   console.log(reports);
                   userDetails = await getUserDetailsOfEachReport(reports); 
                   console.log(userDetails);
@@ -89,6 +94,8 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let result = await prepareResponse(track,startPoint,endPoint,reports,userDetails);
             return res.status(200).send(result); 
       } catch(e){
+            console.log("HERE:");
+            console.log(e);
             res.status(400).send(e.message);
       }
         
@@ -473,7 +480,9 @@ var getReports = async (reportsId) => {
       let promises = [];
 
       reportsId.forEach( element => {
-            promises.push(Reports.findById({_id:element._id}));
+            console.log("elem");
+            console.log(element);
+            promises.push(Reports.findById({_id:element}));
       })
       return Promise.all(promises);
 }
