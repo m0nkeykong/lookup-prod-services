@@ -368,12 +368,18 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
       let result = [];
 
       return new Promise((resolve, reject) => {
+            console.log("isDisabled");
+            console.log(isDisabled);
+            console.log("TRACKS:");
+            console.log(tracks);
             if(isDisabled == '2' && tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
+                              console.log("track:");
+                              console.log(track[0]);
                               // track not empty
                               // get the tracks whose difficulty level is below 3
-                              if(track.difficultyLevel.star <= 3) {
+                              if(track[0].difficultyLevel.star <= 3) {
                                     result.push(track);
                               }
                         }
@@ -413,10 +419,11 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
             console.log("Entered filterTracksByDiffLevel()");
             
             if(difficultyLevel != "NO" && tracks){
+                  console.log("TRACKS: filterTracksByDiffLevel");
                   console.log(tracks);
                   for (let i = 0; i < tracks.length ; ++i){
                         if( !(tracks.length == 0) ){
-                              let diffNumber = Math.round(tracks[i].difficultyLevel.star);
+                              let diffNumber = Math.round(tracks[i][0].difficultyLevel.star);
                               if(diffNumber == difficultyLevel) {
                                     result.push(tracks[i]);
                               }
