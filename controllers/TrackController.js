@@ -455,10 +455,10 @@ var filterTracksByType = async (tracks, type) => {
                         // tracks = tracks[0];
                         console.log("GGGGGGGG");
                         console.log(tracks);
-                        // result = _.filter(tracks, (track) => {
-                        //       if(track.travelMode)
-                        //             return track.travelMode.toUpperCase() == type.toUpperCase();
-                        // })
+                        result = _.filter(tracks, (track) => {
+                              if(track.travelMode)
+                                    return track.travelMode.toUpperCase() == type.toUpperCase();
+                        })
                         
                         console.log("RESULT:");
                         // console.log(result);
