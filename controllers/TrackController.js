@@ -343,7 +343,7 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             console.log("TRACKSSSSSSSSSSSSSSSSSSSS");
             console.log(tracks);
             //////////
-            // let tracksWithPoints = await getPointsByTracks(tracks);
+            let tracksWithPoints = await getPointsByTracks(tracks);
             //////////
             let tracksType = await filterTracksByType(tracks,req.params.type);
             console.log("TRACKS TYPE");
@@ -373,11 +373,15 @@ var getPointsByTracks = async (tracks) => {
       for (let i=0; i<tracks.length; ++i){
             
             if( !(tracks[i].length == 0) ){
-                  Points.findOne({
+                  console.log("startPoint sdffffsd");
+                  console.log(tracks[i][0].startPoint);
+                  let startPoint = await Points.findOne({
                         _id: tracks[i][0].startPoint
-                  }, (point) => {
-                        result.push([tracks[i][0],point]);
                   });
+                  let endPoint = await Points.findOne({
+                        _id: tracks[i][0].endPoint
+                  });
+                  result.push([tracks[i][0],startPoint,endPoint]);
             }
       }
 
@@ -393,7 +397,7 @@ var getPointsByTracks = async (tracks) => {
       //       }
       // })
 
-      console.log("sdfsdf");
+      console.log("resultsss::");
       console.log(result);
       return tracks;
 }
