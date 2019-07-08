@@ -342,6 +342,9 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             let tracks = await findTracksPoints(startPoints,endPoints);
             console.log("TRACKSSSSSSSSSSSSSSSSSSSS");
             console.log(tracks);
+            //////////
+            // let tracksWithPoints = await getPointsByTracks(tracks);
+            //////////
             let tracksType = await filterTracksByType(tracks,req.params.type);
             console.log("TRACKS TYPE");
             console.log(tracksType);
@@ -362,6 +365,38 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
 });
 
 /** ---------------------------- functions ---------------------------- */
+
+var getPointsByTracks = async (tracks) => {
+      console.log("Entered getPointsByTracks()");
+
+      let result = [];
+      for (let i=0; i<tracks.length; ++i){
+            
+            if( !(tracks[i].length == 0) ){
+                  Points.findOne({
+                        _id: tracks[i][0].startPoint
+                  }, (point) => {
+                        result.push([tracks[i][0],point]);
+                  });
+            }
+      }
+
+      // tracks.forEach( track => {
+      //       console.log("FAFA:");
+      //       console.log(track);
+      //       if( !(track.length == 0) ){
+      //             Points.findOne({
+      //                   _id: track[0].startPoint
+      //             }, (err, point) => {
+      //                   track.push(point)
+      //             });
+      //       }
+      // })
+
+      console.log("sdfsdf");
+      console.log(result);
+      return tracks;
+}
 
 var filterTrackByDisabled = async (isDisabled,tracks) => {
       console.log("Entered filterTrackByDisabled()");
@@ -453,11 +488,11 @@ var filterTracksByType = async (tracks, type) => {
                               return track.length;
                         })
                         // tracks = tracks[0];
-                        console.log("GGGGGGGG");
-                        console.log(tracks);
                         result = _.filter(tracks, (track) => {
-                              if(track.travelMode)
-                                    return track.travelMode.toUpperCase() == type.toUpperCase();
+                              if(typeof track[0] !== "undefined"){
+                                    if(track[0].travelMode)
+                                          return track[0].travelMode.toUpperCase() == type.toUpperCase();
+                              }
                         })
                         
                         console.log("RESULT:");

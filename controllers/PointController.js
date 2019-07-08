@@ -22,6 +22,19 @@ router.post('/insertPoint', (req, res) => {
       });
 });
 
+
+router.get('/getPoint/:id', (req, res) => {
+      console.log("Enter getPoint route(GET)");
+      console.log(req.params.id);
+      PointSchema.findOne({
+            _id: req.params.id
+      }, (err, point) => {
+            if (err) res.status(500).send(err);
+            else if (point) res.status(200).send(point);
+            else res.status(500).send("Error find point");
+      });
+});
+
 /** 
     values required:
         id
