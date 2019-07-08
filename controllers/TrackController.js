@@ -345,7 +345,7 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             //////////
             let tracksWithPoints = await getPointsByTracks(tracks);
             //////////
-            let tracksType = await filterTracksByType(tracks,req.params.type);
+            let tracksType = await filterTracksByType(tracksWithPoints,req.params.type);
             console.log("TRACKS TYPE");
             console.log(tracksType);
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
@@ -399,7 +399,7 @@ var getPointsByTracks = async (tracks) => {
 
       console.log("resultsss::");
       console.log(result);
-      return tracks;
+      return result;
 }
 
 var filterTrackByDisabled = async (isDisabled,tracks) => {
@@ -480,8 +480,9 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
 var filterTracksByType = async (tracks, type) => {
 
-      console.log("TYPEEEEE:");
+      console.log("TYPEEEEE: sdfsdfds");
       console.log(type);
+      console.log(tracks);
       let result = [];
       tracks = JSON.parse(JSON.stringify(tracks));
       return new Promise((resolve, reject) => {
