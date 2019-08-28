@@ -9,8 +9,6 @@ var express = require('express'),
     cors = require('cors'),
     port = process.env.PORT || 3000;
 
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('port', port);
 app.use(cors());
@@ -35,8 +33,6 @@ app.all('*', (req, res, next) => {
     res.status(404).send({ "Message": `This page was not found` });
     next();
 });
-
-// app.post('/login', userController.insertUser);
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);

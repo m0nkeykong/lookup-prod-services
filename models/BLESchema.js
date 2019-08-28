@@ -7,8 +7,6 @@ var BLESchema = new mongoose.Schema({
       deviceName: {type: String, required: true},
       writeData: {type: Number},      // boolean
       readData: {type: Number}      // boolean
-      // TODO: ??
-      // Embedded:{}
     }
 );
 
