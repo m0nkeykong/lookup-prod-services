@@ -18,7 +18,6 @@ router.use(bodyParser.urlencoded({ extended: true }));
 **/
 router.post('/insertTrack', (req, res) => {
       console.log("Enter route(POST): /insertTrack");
-      console.log(req.body);
       const newTrack = new Track(req.body);
       newTrack.save((err, track) => {
             if (err) res.status(500).send(err);
@@ -72,30 +71,19 @@ router.get('/getTrackById/:trackId', async (req, res) => {
             let startPoint = await getPoint(track.startPoint);
             let endPoint = await getPoint(track.endPoint); 
             let wayPoints;
-            console.log(track.wayPoints);
             if( (track.wayPoints.length !== 0) ) {
                   wayPoints = await getPoints(track.wayPoints); 
-                  console.log(wayPoints);
             }
 
-            console.log("REPOOOOOOOOOOO 55");
-            console.log(track);
-            console.log(track.reports);
-            console.log(track.reports.length);
             if( track.reports.length > 0 ) {
                   reports = await getReports(track.reports); 
-                  console.log("result of getReports:");
-                  console.log(reports);
                   userDetails = await getUserDetailsOfEachReport(reports); 
-                  console.log(userDetails);
             }
 
 
             let result = await prepareResponse(track,startPoint,endPoint,reports,userDetails);
             return res.status(200).send(result); 
       } catch(e){
-            console.log("HERE:");
-            console.log(e);
             res.status(400).send(e.message);
       }
         
@@ -120,11 +108,9 @@ router.get('/getAllTracks', async (req, res) => {
 
                   if( (track.wayPoints.length !== 0) ) {
                   wayPoints = await getPoints(track.wayPoints); 
-                  console.log(wayPoints);
                   }
 
                   result.push(await prepareResponseAllTracks(track,startPoint,endPoint,wayPoints));
-                  console.log(startPoint);
                 });
 
             return res.status(200).send(result); 
@@ -132,24 +118,6 @@ router.get('/getAllTracks', async (req, res) => {
             res.status(400).send(e.message);
       }
 });
-
-
-var getAllTracks = async () => {
-      return Track.find({});
-}
-
-var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
-      return new Promise((resolve, reject) => {
-            console.log("function: prepareResponseAllTracks");
-            result = new Object()
-            result.track = _track;
-            result.startPoint = _startPoint;  
-            result.endPoint = _endPoint;  
-            result.wayPoints = _wayPoints;
-            result.travelMode = _track.type;
-            resolve(result);
-      })
-}
 
 // Update Track by id
 router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
@@ -163,29 +131,6 @@ router.put('/updateTrack/:trackId', onlyNotEmpty, (req, res) => {
             res.status(200).send(docs);
       });
 });
-
-// // Update Track by id
-// router.post('/updateTrackTimei/:trackId/:isDisable/:minutes', onlyNotEmpty, (req, res) => {
-//       console.log("Enter route(PUT): /updateTrackTimei");
-
-//       Track.find({_id: req.params.trackId})
-//       .then((track, err) => {
-//   	      if(err) res.status(400).send(err);
-//              if(track){
-//                   track[0].disabledTime.actual = req.params.minutes
-//                   track[0].disabledTime.count = track[0].disabledTime.count + 1 
-//                   track[0].nonDisabledTime.actual = req.params.minutes
-//                   track[0].nonDisabledTime.count = track[0].disabledTime.count + 1 
-//                   track[0].save((err, track) => {
-//                         if(err) res.status(400).send(err);
-//                         res.status(200).send(track);
-//                   })
-//       }
-//       })
-//       .catch(err => {
-//             console.log(err);
-//       }) 
-// });
 
 // Update Track by id
 router.put('/updateDefficultyLevel/:trackId/:star', onlyNotEmpty, (req, res) => {
@@ -340,17 +285,9 @@ router.get('/getTracksFilter/:from/:to/:type/:diffLevel/:isDisabled', async (req
             let startPoints = await findPointsByCity(req.params.from);
             let endPoints = await findPointsByCity(req.params.to);
             let tracks = await findTracksPoints(startPoints,endPoints);
-            console.log("TRACKSSSSSSSSSSSSSSSSSSSS");
-            console.log(tracks);
-            //////////
             let tracksWithPoints = await getPointsByTracks(tracks);
-            //////////
             let tracksType = await filterTracksByType(tracksWithPoints,req.params.type);
-            console.log("TRACKS TYPE");
-            console.log(tracksType);
             let tracksFinal = await filterTracksByDiffLevel(tracksType,req.params.diffLevel);
-            console.log("TRACKS FINAL");
-            console.log(tracksFinal);
             let filterNoRepeat = await pushTracksToArrayNoRepeats(tracksFinal);
             let TracksResults = await filterTrackByDisabled(req.params.isDisabled,filterNoRepeat);
 
@@ -373,8 +310,6 @@ var getPointsByTracks = async (tracks) => {
       for (let i=0; i<tracks.length; ++i){
             
             if( !(tracks[i].length == 0) ){
-                  console.log("startPoint sdffffsd");
-                  console.log(tracks[i][0].startPoint);
                   let startPoint = await Points.findOne({
                         _id: tracks[i][0].startPoint
                   });
@@ -385,21 +320,24 @@ var getPointsByTracks = async (tracks) => {
             }
       }
 
-      // tracks.forEach( track => {
-      //       console.log("FAFA:");
-      //       console.log(track);
-      //       if( !(track.length == 0) ){
-      //             Points.findOne({
-      //                   _id: track[0].startPoint
-      //             }, (err, point) => {
-      //                   track.push(point)
-      //             });
-      //       }
-      // })
-
-      console.log("resultsss::");
-      console.log(result);
       return result;
+}
+
+var getAllTracks = async () => {
+      return Track.find({});
+}
+
+var prepareResponseAllTracks = async (_track, _startPoint, _endPoint, _wayPoints = []) => {
+      return new Promise((resolve, reject) => {
+            console.log("function: prepareResponseAllTracks");
+            result = new Object()
+            result.track = _track;
+            result.startPoint = _startPoint;  
+            result.endPoint = _endPoint;  
+            result.wayPoints = _wayPoints;
+            result.travelMode = _track.type;
+            resolve(result);
+      })
 }
 
 var filterTrackByDisabled = async (isDisabled,tracks) => {
@@ -407,15 +345,9 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
       let result = [];
 
       return new Promise((resolve, reject) => {
-            console.log("isDisabled");
-            console.log(isDisabled);
-            console.log("TRACKS:");
-            console.log(tracks);
             if(isDisabled == '2' && tracks){
                   tracks.forEach( track => {
                         if( !(track.length == 0) ){
-                              console.log("track:");
-                              console.log(track[0]);
                               // track not empty
                               // get the tracks whose difficulty level is below 3
                               if(track[0].difficultyLevel.star <= 3) {
@@ -423,7 +355,6 @@ var filterTrackByDisabled = async (isDisabled,tracks) => {
                               }
                         }
                   })
-                  console.log(result);
                   resolve(result);
             }
             else
@@ -458,8 +389,6 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
             console.log("Entered filterTracksByDiffLevel()");
             
             if(difficultyLevel != "NO" && tracks){
-                  console.log("TRACKS: filterTracksByDiffLevel");
-                  console.log(tracks);
                   for (let i = 0; i < tracks.length ; ++i){
                         if( !(tracks.length == 0) ){
                               let diffNumber = Math.round(tracks[i][0].difficultyLevel.star);
@@ -468,9 +397,6 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
                               }
                         }
                   }
-                  
-                  console.log("RESULTS OF filterTracksByDiffLevel:");
-                  console.log(result);
                   resolve(result);
             }
             else
@@ -480,9 +406,6 @@ var filterTracksByDiffLevel = async (tracks, difficultyLevel) => {
 
 var filterTracksByType = async (tracks, type) => {
 
-      console.log("TYPEEEEE: sdfsdfds");
-      console.log(type);
-      console.log(tracks);
       let result = [];
       tracks = JSON.parse(JSON.stringify(tracks));
       return new Promise((resolve, reject) => {
@@ -500,9 +423,6 @@ var filterTracksByType = async (tracks, type) => {
                               }
                         })
                         
-                        console.log("RESULT:");
-                        // console.log(result);
-                        console.log(result);
                         resolve(result);
                         
                  } catch (err) {
@@ -539,8 +459,6 @@ var getReports = async (reportsId) => {
       let promises = [];
 
       reportsId.forEach( element => {
-            console.log("elem");
-            console.log(element);
             promises.push(Reports.findById({_id:element}));
       })
       return Promise.all(promises);
@@ -600,7 +518,6 @@ var pushTracksToArrayNoRepeats = (tracks) => {
                               }
                         }
                   })
-                  console.log(result);
                   resolve(result);
             }
             else
@@ -615,8 +532,6 @@ var deleteSpecificTrack = async (trackId) => {
 
             Track.findByIdAndRemove(trackId, (err, docs) => {
                   if (err) return reject(err);
-
-                  console.log(`User: ${docs.title} deleted successfully`);
                   resolve(true);
             })
       })
@@ -698,7 +613,6 @@ var deleteFavoriteTracksFromUsers = async (trackId) => {
 
                         User.update(cond, update, opts, err => {
                               if (err) {
-                                    console.log(err);
                                     resolve(err);
                               }
                         });
@@ -731,7 +645,6 @@ var deleteTrackRecordsFromUsers = async (trackId) => {
 
                         User.update(cond, update, opts, err => {
                               if (err) {
-                                    console.log(err);
                                     resolve(err);
                               }
                         });
