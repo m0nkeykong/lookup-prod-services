@@ -25,7 +25,6 @@ router.post('/insertPoint', (req, res) => {
 
 router.get('/getPoint/:id', (req, res) => {
       console.log("Enter getPoint route(GET)");
-      console.log(req.params.id);
       PointSchema.findOne({
             _id: req.params.id
       }, (err, point) => {
