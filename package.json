@@ -4,11 +4,11 @@
   "description": "LookUp Final Project",
   "main": "index.js",
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
     "eslint": "^5.15.1",
-    "express": "^4.16.4",
+    "express": "^4.18.2",
     "lodash": "^4.17.11",
     "mongoose": "^5.4.18",
     "node-dev": "^3.1.3",
